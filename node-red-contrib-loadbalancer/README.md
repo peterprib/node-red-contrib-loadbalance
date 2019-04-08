@@ -1,4 +1,4 @@
-#node-red-contrib-loadbalancer
+#node-red-contrib-loadbalance
 
 
 [Node-Red][1] node to [load balance][2].
@@ -7,7 +7,7 @@ Basically spreads input messages to flows based on:
 *   round robin - next in list
 *   random - randomly across out paths
 
-This allows incoming messages to be passed to servers that may be other noder red instances.
+This allows incoming messages to be passed to servers that may be other node red instances.
 
 
 ##To be done
@@ -18,7 +18,7 @@ This allows incoming messages to be passed to servers that may be other noder re
 
 Run the following command in the root directory of your Node-RED install
 
-    npm install node-red-contrib-loadbalancer
+    npm install node-red-contrib-loadbalance
 
 
 Test/example flow in  test/testflow.json
@@ -32,6 +32,6 @@ Test/example flow in  test/testflow.json
 
 [1]: http://nodered.org "node-red home page"
 
-[2]: https://www.npmjs.com/package/node-red-contrib-loadbalancer "source code"
+[2]: https://www.npmjs.com/package/node-red-contrib-loadbalance "source code"
 
 [3]: https://github.com/peterprib "base github"
