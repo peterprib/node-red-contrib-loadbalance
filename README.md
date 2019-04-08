@@ -1,4 +1,4 @@
-#node-red-contrib-loadbalance
+# node-red-contrib-loadbalance
 
 
 [Node-Red][1] node to [load balance][2].
@@ -10,11 +10,11 @@ Basically spreads input messages to flows based on:
 This allows incoming messages to be passed to servers that may be other node red instances.
 
 
-##To be done
+## To be done
 * resource based even load selection
 * resource based fold selection
 
-#Install
+# Install
 
 Run the following command in the root directory of your Node-RED install
 
@@ -24,7 +24,7 @@ Run the following command in the root directory of your Node-RED install
 Test/example flow in  test/testflow.json
 
 
-#Author
+# Author
   
 [Peter Prib][3] 
 
