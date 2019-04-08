@@ -1,0 +1,32 @@
+{
+  "name": "node-red-contrib-loadbalancer",
+  "version": "0.0.1",
+  "description": "Node-RED implements loadbalancer.",
+  "dependencies": {
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \\\"Error: no test specified\\\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peterprib/node-red-contrib-loadbalancer.git"
+  },
+  "keywords": [
+    "node-red",
+    "load",
+    "balance",
+    "loadbalance"
+  ],
+  "node-red": {
+    "nodes": {
+      "loadbalance": "loadbalance.js"
+    }
+  },
+  "author": "Peter Prib",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/peterprib/node-red-contrib-loadbalancer/issues"
+  },
+  "homepage": "https://github.com/peterprib/node-red-contrib-loadbalancer#readme"
+}

@@ -1,0 +1,52 @@
+<script type="text/x-red" data-help-name="Load Balance">
+    <p>Load balance on outputs </p>
+    </p>
+</script>
+
+<script type="text/x-red" data-template-name="Load Balance">
+
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-selection"><i class="fa fa-list-ul"></i> Selection Method</label>
+        <select id="node-input-selection" placeholder="selection">
+            <option value="next">Round Robin</option>
+            <option value="random">Random</option>
+        </select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-outputs"><i class="icon-bookmark"></i> Paths</label>
+        <input type="number" id="node-input-outputs"placeholder="Outputs" min=1 max=100>
+    </div>
+
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('Load Balance',{
+    	category: 'function',
+        defaults: {
+            name: {value:"",required:false},
+            outputs: {value:1,required:true},
+            selection: {value:"next",required:true}
+        },
+	    inputs:1,
+        inputLabels: "",
+        outputs:1,
+        outputLabels: [],
+        icon: "icons8-multicast-80.png",
+        label: function() {
+            return this.name||this._("Load Balance");
+        },
+        labelStyle: function() {
+            return "node_label_italic";
+        },
+        oneditprepare: function() {
+        },
+        oneditsave: function() {
+        },
+        oneditresize: function(size) {
+        }
+    });
+</script>
