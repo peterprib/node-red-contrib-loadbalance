@@ -1,6 +1,25 @@
 <script type="text/x-red" data-help-name="Load Balance">
     <p>Load balance on outputs </p>
-    </p>
+    <p>
+	<dl>
+	<dt>Round Robin</dt><dd>Next output path and when reaches last next is first in list</dd>
+	<dt>Random</dt><dd>Randomly picks next output path</dd>
+	<dt>Fold on capacity</dt><dd>Uses path with capacity first in list. If all at capacity then randomly.</dd>
+	<dt>Next below average capacity</dt><dd>Uses next path that is below average capacity. If all at same capacity then randomly.  </dd>
+	</dl>
+	</p>
+	<p>
+	msg.topic can be used to send directives to load balancer.  
+	<dl>
+	<dt>loadbalance</dt>
+		<dd>Set a weigthing on a path form {path:0,capactity:100} or an array of these values.  
+		All paths area initially set to 100.  Zero is considered no capacity. 
+		Mechanism by which receiving route can send feed back on load.
+		</dd>
+	</dl>
+	<dt>loadbalancedebug</dt>Send medata data about routing to log<dd></dd>
+	</p>
+
 </script>
 
 <script type="text/x-red" data-template-name="Load Balance">
@@ -13,7 +32,9 @@
         <label for="node-input-selection"><i class="fa fa-list-ul"></i> Selection Method</label>
         <select id="node-input-selection" placeholder="selection">
             <option value="next">Round Robin</option>
-            <option value="random">Random</option>
+            <option value="random">Random</option> 
+            <option value="foldweighted">Fold on capacity</option> 
+            <option value="nextsmoothed">Next smoothing to average capacity</option> 
         </select>
     </div>
     <div class="form-row">
