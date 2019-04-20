@@ -6,11 +6,12 @@
 Basically spreads input messages to flows based on:
 * Round Robin - next in list then start at being again
 * Random - randomly across out paths
-* Fold on capacity - place load on first node in order with capacity.  Good for improving cache hit ratios 
-* Next smoothing to average capacity - next that is >= average capacity to get smoothing of load
-
+* Fold on capacity - place load on first node in order with capacity.  Good for improving cache hit ratios. At full capacity random selection.
+* Next smoothing to average capacity - next that is >= average capacity to get smoothing of load. At full capacity random selection.
 
 This allows incoming messages to be passed to servers that may be other node red instances.
+
+Out port zero is used for administration and used to send message if there is no availability in all routes.  This allows responses messages or queuing to be managed.
 
 ![Load Balance](documentation/loadbalance.JPG "Load Balance")
 
@@ -18,11 +19,11 @@ This allows incoming messages to be passed to servers that may be other node red
 
 Messages can be sent to node with the following topics and not forwarded 
 
-## msg.topic loanbalance
+## msg.topic loadbalance
 
-Takes in metrics for a path in msg.payload in form:
+Takes in metrics and availablity for a path in msg.payload in form:
 
-	{path: <path number>, capacity: <numeric value>} 
+	{path: <path number>, capacity: <numeric value>, status: <0=unavailable>} 
 
 or and array of above.
 
@@ -30,18 +31,23 @@ Capacity of zero is considered saturation.  Positive values are expected.
 
 Basically a remote node could be constructed to send a message to update 
 
-## msg.topic loanbalancedebug
+## msg.topic loadbalance.list
+
+Will send metadata about queues to admin output port.
+
+## msg.topic loanbalance.debug
 
 Will send metadata about queues to error log so visible in debug console.
 
 
 ## To be done
 
-1. Stop and start a path
-* Choice between message discard, queue, random or next when saturation reached 
+1. Choice between message discard, queue, random or next when saturation reached
+* Persist path states and capacity on recycle 
 * Am alive polling, keep alive can be used to trigger remote to send capacity metrics
 * Dynamic addition of paths by remote nodes subscribing or discovery
 * Some base capacity calls to remote engines 
+* sticky path
 
 
 # Install

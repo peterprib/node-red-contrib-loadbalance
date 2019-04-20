@@ -1,23 +1,24 @@
 <script type="text/x-red" data-help-name="Load Balance">
-    <p>Load balance on outputs </p>
+    <p>Load balance on outputs.  First port is admin port only.  Remaining ports are load balanced according to the selected method:</p>
     <p>
 	<dl>
 	<dt>Round Robin</dt><dd>Next output path and when reaches last next is first in list</dd>
 	<dt>Random</dt><dd>Randomly picks next output path</dd>
 	<dt>Fold on capacity</dt><dd>Uses path with capacity first in list. If all at capacity then randomly.</dd>
-	<dt>Next below average capacity</dt><dd>Uses next path that is below average capacity. If all at same capacity then randomly.  </dd>
+	<dt>Next below average capacity</dt><dd>Uses next path that is below average capacity. If all at same capacity then randomly.</dd>
 	</dl>
 	</p>
 	<p>
 	msg.topic can be used to send directives to load balancer.  
 	<dl>
 	<dt>loadbalance</dt>
-		<dd>Set a weigthing on a path form {path:0,capactity:100} or an array of these values.  
-		All paths area initially set to 100.  Zero is considered no capacity. 
+		<dd>Set a weigthing on a path form {path:0,capactity:100,status:1} or an array of these values.  
+		All paths area initially set to {capactity:100,status:1} .  Zero is considered no capacity and for status unavailable  
 		Mechanism by which receiving route can send feed back on load.
 		</dd>
 	</dl>
-	<dt>loadbalancedebug</dt>Send medata data about routing to log<dd></dd>
+	<dt>loadbalance.debug</dt>Send medata data about routing to log<dd></dd>
+	<dt>loadbalance.list</dt>Send medata data message about routing to admin port<dd></dd>
 	</p>
 
 </script>
@@ -38,8 +39,8 @@
         </select>
     </div>
     <div class="form-row">
-        <label for="node-input-outputs"><i class="icon-bookmark"></i> Paths</label>
-        <input type="number" id="node-input-outputs"placeholder="Outputs" min=1 max=100>
+        <label for="node-input-routes"><i class="icon-bookmark"></i> Paths</label>
+        <input type="number" id="node-input-routes" placeholder="Outputs" min=0 max=100>
     </div>
 
 </script>
@@ -49,13 +50,14 @@
     	category: 'function',
         defaults: {
             name: {value:"",required:false},
+            routes: {value:1,required:true},
             outputs: {value:1,required:true},
             selection: {value:"next",required:true}
         },
 	    inputs:1,
         inputLabels: "",
         outputs:1,
-        outputLabels: [],
+        outputLabels: ["admin"],
         icon: "icons8-multicast-80.png",
         label: function() {
             return this.name||this._("Load Balance");
@@ -64,6 +66,11 @@
             return "node_label_italic";
         },
         oneditprepare: function() {
+        	var node=this;
+        	this.outputs=1+this.routes;
+        	$('#node-input-routes').change(function () {
+        		node.outputs=1+Number($('#node-input-routes').val());
+        	});
         },
         oneditsave: function() {
         },
