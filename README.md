@@ -13,6 +13,15 @@ This allows incoming messages to be passed to servers that may be other node red
 
 Out port zero is used for administration and used to send message if there is no availability in all routes.  This allows responses messages or queuing to be managed.
 
+Message per second capacity is visible when capacity based mode is selected.  Indicates capacity is many messages per second are allowed.
+
+Default capacity is visible when capacity based mode is selected.
+
+At no capacity is visible when capacity based mode is selected. Allows choice of what is to be done with message when full capacity is reached.
+
+At no availablity allows  choice of what is to be done with message when there is no availabilty.  Messages either discarded or sent to admin port.
+
+
 ![Load Balance](documentation/loadbalance.JPG "Load Balance")
 
 # Management
@@ -42,12 +51,12 @@ Will send metadata about queues to error log so visible in debug console.
 
 ## To be done
 
-1. Choice between message discard, queue, random or next when saturation reached
-* Persist path states and capacity on recycle 
+1. Persist path states and capacity on recycle 
 * Am alive polling, keep alive can be used to trigger remote to send capacity metrics
 * Dynamic addition of paths by remote nodes subscribing or discovery
 * Some base capacity calls to remote engines 
 * sticky path
+* mps - default base capacity set per path at setup
 
 
 # Install
@@ -65,7 +74,6 @@ Test/example flow in  test/testflow.json
   
 [Peter Prib][3] 
 
-[id]: url "title"
 
 [1]: http://nodered.org "node-red home page"
 

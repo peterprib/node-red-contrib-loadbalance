@@ -8,6 +8,25 @@
 	<dt>Next below average capacity</dt><dd>Uses next path that is below average capacity. If all at same capacity then randomly.</dd>
 	</dl>
 	</p>
+
+	<p>On no capacity</p>
+	<p>
+	<dl>
+    <dt>Round Robin</dt><dd>See above</dd>
+    <dt>Random</dt><dd>Randomly picks next output path regardless of capacity</dd> 
+    <dt>Discard</dt><dd>Drops message</dd> 
+    <dt>Admin port</dt><dd>Send message to admoin port 0</dd> 
+	</dl>
+	</p>
+
+	<p>On no avaliability</p>
+	<p>
+	<dl>
+    <dt>Discard</dt><dd>Drops message</dd> 
+    <dt>Send admin port</dt><dd>Send message to admin port 0</dd> 
+	</dl>
+	</p>
+
 	<p>
 	msg.topic can be used to send directives to load balancer.  
 	<dl>
@@ -38,10 +57,38 @@
             <option value="nextsmoothed">Next smoothing to average capacity</option> 
         </select>
     </div>
+
+    <div class="form-row form-row-http-in-mps hide">
+        <label>&nbsp;</label>
+        <input type="checkbox" id="node-input-mps" style="display: inline-block; width: auto; vertical-align: top;">
+        <label for="node-input-mps" style="width: 70%;">Messages per second capacity</label>
+    </div>
+    <div class="form-row form-row-http-in-defaultcapacity hide">
+        <label for="node-input-defaultcapacity"><i class="icon-bookmark"></i> Default Capacity</label>
+        <input type="number" id="node-input-defaultcapacity" placeholder="defaultcapacity" min=1 max=1000000 step=10>
+    </div>
+
     <div class="form-row">
         <label for="node-input-routes"><i class="icon-bookmark"></i> Paths</label>
-        <input type="number" id="node-input-routes" placeholder="Outputs" min=0 max=100>
+        <input type="number" id="node-input-routes" placeholder="Outputs" min=1 max=100>
     </div>
+    <div class="form-row form-row-http-in-nocapacity hide">
+        <label for="node-input-nocapacity"><i class="fa fa-list-ul"></i> At no capacity</label>
+        <select id="node-input-nocapacity" placeholder="nocapacity">
+            <option value="next">Round Robin</option>
+            <option value="random">Random</option> 
+            <option value="discard">Discard</option> 
+            <option value="admin">Send admin port</option> 
+        </select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-noavailablity"><i class="fa fa-list-ul"></i> At no availabilty</label>
+        <select id="node-input-noavailablity" placeholder="noavailablity">
+            <option value="discard">Discard</option> 
+            <option value="admin">Send admin port</option> 
+        </select>
+    </div>
+
 
 </script>
 
@@ -52,7 +99,11 @@
             name: {value:"",required:false},
             routes: {value:1,required:true},
             outputs: {value:1,required:true},
-            selection: {value:"next",required:true}
+            selection: {value:"next",required:true},
+            noavailablity: {value:"admin",required:true},
+            nocapacity: {value:"admin",required:true},
+            defaultcapacity: {value:100,required:true},
+            mps: {value:"",required:false}
         },
 	    inputs:1,
         inputLabels: "",
@@ -71,6 +122,19 @@
         	$('#node-input-routes').change(function () {
         		node.outputs=1+Number($('#node-input-routes').val());
         	});
+        	
+            $("#node-input-selection").change(function() {
+                if (['foldweighted','nextsmoothed'].includes( $(this).val() )) {
+                    $(".form-row-http-in-defaultcapacity").show();
+                    $(".form-row-http-in-nocapacity").show();
+                    $(".form-row-http-in-mps").show();
+                } else {
+                    $(".form-row-http-in-defaultcapacity").hide();
+                    $(".form-row-http-in-nocapacity").hide();
+                    $(".form-row-http-in-mps").hide();
+                }
+            }).change();
+        	
         },
         oneditsave: function() {
         },

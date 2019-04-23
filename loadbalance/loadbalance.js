@@ -13,6 +13,9 @@ function updatePath(data) {
 				}
 			}
 			Object.assign(this.paths[data.path],data);
+			if(data.capacity) {
+				this.paths[data.path].baseCapacity=data.capacity;
+			}
 		} 
 	} catch(e) {
 		this.error("loadbalance update failed: "+e +" data:"+data);
@@ -44,7 +47,7 @@ var setPaths={
 		for(this.path=0;this.path<this.available.length;this.path++) {
 			if(this.paths[this.available[this.path]].capacity>0) return this.path;
 		}
-		return setPaths.random.apply(this);
+		return this.pathNoCapacity.apply(this);
 	},
 	nextsmoothed:function() {
 		for(var i=0;i<this.available.length;i++) {
@@ -55,42 +58,55 @@ var setPaths={
 				return this.path;
 			}
 		}
-		return setPaths.random.apply(this);
+		return this.pathNoCapacity.apply(this);
 	},
-	dropmessage:function() {
-		return -1; // by placing on none existence wire
+	admin:function() {
+		return -1; // port assigned to admin
+	},
+	discard:function() {
+		return -2; // by placing on none existent port
 	}
 }
 
 module.exports = function(RED) {
     function loadBalanceNode(n) {
-    	clonen=Object.assign({},n);
         RED.nodes.createNode(this,n);
-      
         var node=Object.assign(this,{path:0,paths:[],available:[],pathCapacityAvg:100,discards:0},n);
+        node.defaultcapacity=node.defaultcapacity||100;
         for(var i=0;i<node.routes;i++) {
-        	node.paths.push({status:1,capacity:100,count:0,history:Array(3).fill({count:0,capacity:100,status:1})})
+        	node.paths.push({status:1,capacity:node.defaultcapacity,baseCapacity:node.defaultcapacity,count:0,history:Array(3).fill({count:0,capacity:node.defaultcapacity,status:1})})
         }
         setAvailable(node);
-		var setPath = function() {
-			node.path=Math.floor(Math.random()*node.routes);
-		};
 		try{
 			var setPath=setPaths[node.selection];
 		} catch(e) {
 			node.error("Selection mode not found: "+node.selection);
+			var setPath=setPaths.random;
+		}
+		try{
+			this.pathNoCapacity=setPaths[node.nocapacity];
+		} catch(e) {
+			node.error("No capacity selection mode not found: "+node.selection);
+			this.pathNoCapacity=setPaths.random;
+		}
+		try{
+			this.pathNoAvailability=setPaths[node.noavailability];
+		} catch(e) {
+			node.error("No capacity selection mode not found: "+node.selection);
+			this.pathNoAvailability=setPaths.admin;
 		}
         node.on('input', function (msg) {
             switch (msg.topic) {
         		case 'loadbalance':
         			updatePath.apply(node,[msg.payload]);
-        			for(var t=0,i=0;i<node.routes;i++) {
-        				if(node.status) {
-        					t+=node.paths[i].capacity
-        				} 
+        			var t=0;
+        			for(var r of node.routes) {
+        				if(r.status) {
+        					t+=r.capacity;
+        				}
         			}
-        			node.pathCapacityAvg=t?t/node.available.length:0;
         			setAvailable(node);
+        			node.pathCapacityAvg=node.available.length?t/node.available.length:0;
         			node.send();
         			return;
         		case 'loadbalance.list':
@@ -103,18 +119,25 @@ module.exports = function(RED) {
         			return;
             }
         	try{
-               	var port=node.available[setPath.apply(this)];  //  offset for admin port		
+               	var port=node.available[setPath.apply(node)];  //  offset for admin port		
             	node.paths[port].count++;
             	port++;
         	} catch(e) {
-        		if(node.available.length>0) {
-            		node.error("port: "+port+" error: "+e);
-        		}
         		node.discards++;
-        		var port=0;
+        		if(node.available.length<1) { // then no Availability 
+        			port=node.pathNoAvailability.apply(node);
+        		}
+        		if(port<-1) { // drop message
+        			node.send();
+        			return;
+        		}
+        		var port=0; // send to admin
         	}
         	var o=Array(node.outputs).fill(null).fill(msg,port,port+1);
 			node.send(o);
+    		if(node.mpsCheck) {
+    			node.paths[port-1].capacity--;
+    		}
         });
         function checkLoop() { 
         	for(var n,i=0;i<node.routes;i++) {
@@ -124,8 +147,25 @@ module.exports = function(RED) {
         		n.count=0;
         	}
         }
-        node.check = setInterval(checkLoop, 60000); // check every minute 
+        node.check = setInterval(checkLoop, 60000); // check every minute
+        function mpsCheckLoop(node) { 
+        	for(var n,c=0,i=0;i<node.routes;i++) {
+        		n=node.paths[i];
+        		n.capacity=n.baseCapacity;
+        		if(n.status) {
+            		c+=n.capacity;
+        		}
+        	}
+        	node.pathCapacityAvg=node.available.length?c/node.available.length:0;
+        }
+        if(node.mps && ['foldweighted','nextsmoothed'].includes(node.selection) ) {
+        	node.mpsCheck = setInterval(mpsCheckLoop, 1000, node); // check every second
+        	node.log("Established mps capacity");
+        }
         node.on("close", function(removed,done) {
+        	if(node.mpsCheck) {
+        		clearInterval(node.mpsCheck)
+        	}
         	clearInterval(node.check);
         	done();
         });
