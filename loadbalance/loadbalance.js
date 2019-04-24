@@ -1,3 +1,7 @@
+/*
+ * Copyright (C) 2019 Jaroslav Peter Prib
+ */
+
 function updatePath(data) {
 	try {
 		if(Array.isArray(data)) {
@@ -118,6 +122,17 @@ module.exports = function(RED) {
     				node.send();
         			return;
             }
+        	if(node.sticky && msg.req.cookies.hasOwnProperty(node.id)) {
+       		 	var pathLastTime = Number(msg.req.cookies[node.id]);
+       		 	if(node.paths[pathLastTime].status) {
+       	        	var o=Array(node.outputs).fill(null).fill(msg,pathLastTime+1,pathLastTime+2);
+       				node.send(o);
+       	    		if(node.mpsCheck) {
+       	    			node.paths[pathLastTime].capacity--;
+       	    		}
+       	    		return;
+       		 	}
+        	}
         	try{
                	var port=node.available[setPath.apply(node)];  //  offset for admin port		
             	node.paths[port].count++;
@@ -132,6 +147,20 @@ module.exports = function(RED) {
         			return;
         		}
         		var port=0; // send to admin
+        	}
+        	if(node.sticky && port) {
+        		 if(!msg.cookies) msg.cookies = {};
+        		 msg.cookies[node.id]={ 
+        			 value: port-1,
+        			maxAge:360000    // 1 hour
+        		 };
+        		/*
+        		 domain - (String) domain name for the cookie
+        		 expires - (Date) expiry date in GMT. If not specified or set to 0, creates a session cookie
+        		 maxAge - (String) expiry date as relative to the current time in milliseconds
+        		 path - (String) path for the cookie. Defaults to /
+        		 value - (String) the value to use for the cookie
+        		*/
         	}
         	var o=Array(node.outputs).fill(null).fill(msg,port,port+1);
 			node.send(o);

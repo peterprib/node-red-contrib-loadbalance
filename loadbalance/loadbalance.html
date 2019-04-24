@@ -48,6 +48,11 @@
         <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
+    <div class="form-row form-row-http-in-sticky">
+        <label>&nbsp;</label>
+        <input type="checkbox" id="node-input-sticky" style="display: inline-block; width: auto; vertical-align: top;">
+        <label for="node-input-sticky" style="width: 70%;">sticky (HTTP messages using cookie)</label>
+    </div>
     <div class="form-row">
         <label for="node-input-selection"><i class="fa fa-list-ul"></i> Selection Method</label>
         <select id="node-input-selection" placeholder="selection">
@@ -89,7 +94,6 @@
         </select>
     </div>
 
-
 </script>
 
 <script type="text/javascript">
@@ -103,6 +107,7 @@
             noavailablity: {value:"admin",required:true},
             nocapacity: {value:"admin",required:true},
             defaultcapacity: {value:100,required:true},
+            sticky: {value:"",required:false},
             mps: {value:"",required:false}
         },
 	    inputs:1,

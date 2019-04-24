@@ -1,6 +1,5 @@
 # node-red-contrib-loadbalance ![loadbalance](loadbalance/icons/icons8-multicast-80.png "Load Balance") 
 
-
 [Node-Red][1] node to [load balance][2].
 
 Basically spreads input messages to flows based on:
@@ -10,6 +9,8 @@ Basically spreads input messages to flows based on:
 * Next smoothing to average capacity - next that is >= average capacity to get smoothing of load. At full capacity random selection.
 
 This allows incoming messages to be passed to servers that may be other node red instances.
+
+For HTTP sticky can be selected.  This stores the path in a cookie and the same path is reused so long as it is available and the cookie information is maintained on message.
 
 Out port zero is used for administration and used to send message if there is no availability in all routes.  This allows responses messages or queuing to be managed.
 
@@ -55,7 +56,6 @@ Will send metadata about queues to error log so visible in debug console.
 * Am alive polling, keep alive can be used to trigger remote to send capacity metrics
 * Dynamic addition of paths by remote nodes subscribing or discovery
 * Some base capacity calls to remote engines 
-* sticky path
 * mps - default base capacity set per path at setup
 
 
@@ -69,6 +69,11 @@ Run the following command in the root directory of your Node-RED install
 Test/example flow in  test/testflow.json
 
 ![Test](documentation/test.JPG "Test flow")
+
+Test flow for sticky feature in test/testSticky.json
+
+![Test Sticky](documentation/testSticky.JPG "Test Sticky flow")
+
 
 # Author
   
