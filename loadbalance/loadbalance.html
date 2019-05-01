@@ -1,43 +1,61 @@
 <script type="text/x-red" data-help-name="Load Balance">
-    <p>Load balance on outputs.  First port is admin port only.  Remaining ports are load balanced according to the selected method:</p>
+    <p>Load balance on outputs.  First port is admin port only.  
+	Remaining ports are load balanced according to the selected method:</p>
     <p>
-	<dl>
-	<dt>Round Robin</dt><dd>Next output path and when reaches last next is first in list</dd>
-	<dt>Random</dt><dd>Randomly picks next output path</dd>
-	<dt>Fold on capacity</dt><dd>Uses path with capacity first in list. If all at capacity then randomly.</dd>
-	<dt>Next below average capacity</dt><dd>Uses next path that is below average capacity. If all at same capacity then randomly.</dd>
-	</dl>
+		<dl>
+			<dt>Round Robin</dt><dd>Next output path and when reaches last next is first in list</dd>
+			<dt>Random</dt><dd>Randomly picks next output path</dd>
+			<dt>Fold on capacity</dt><dd>Uses path with capacity first in list. If all at capacity then randomly.</dd>
+			<dt>Next below average capacity</dt><dd>Uses next path that is below average capacity. If all at same capacity then randomly.</dd>
+		</dl>
 	</p>
-
+	<p>If sticky selected it then assumes http message and adds a cookie to message which indicates path used.
+	If message has cookie it tries to honor path in cookie (is available). 
+	</p>
 	<p>On no capacity</p>
 	<p>
-	<dl>
-    <dt>Round Robin</dt><dd>See above</dd>
-    <dt>Random</dt><dd>Randomly picks next output path regardless of capacity</dd> 
-    <dt>Discard</dt><dd>Drops message</dd> 
-    <dt>Admin port</dt><dd>Send message to admoin port 0</dd> 
-	</dl>
+		<dl>
+    		<dt>Round Robin</dt><dd>See above</dd>
+   			<dt>Random</dt><dd>Randomly picks next output path regardless of capacity</dd> 
+    		<dt>Discard</dt><dd>Drops message</dd> 
+    		<dt>Admin port</dt><dd>Send message to admoin port 0</dd> 
+		</dl>
 	</p>
 
-	<p>On no avaliability</p>
-	<p>
-	<dl>
-    <dt>Discard</dt><dd>Drops message</dd> 
-    <dt>Send admin port</dt><dd>Send message to admin port 0</dd> 
-	</dl>
+	<p>On no avaliability
+		<dl>
+   			<dt>Discard</dt><dd>Drops message</dd> 
+			<dt>Send admin port</dt><dd>Send message to admin port 0</dd> 
+		</dl>
 	</p>
 
 	<p>
 	msg.topic can be used to send directives to load balancer.  
-	<dl>
-	<dt>loadbalance</dt>
-		<dd>Set a weigthing on a path form {path:0,capactity:100,status:1} or an array of these values.  
-		All paths area initially set to {capactity:100,status:1} .  Zero is considered no capacity and for status unavailable  
-		Mechanism by which receiving route can send feed back on load.
-		</dd>
-	</dl>
-	<dt>loadbalance.debug</dt>Send medata data about routing to log<dd></dd>
-	<dt>loadbalance.list</dt>Send medata data message about routing to admin port<dd></dd>
+		<dl>
+			<dt>loadbalance</dt>
+				<dd>Set a weigthing on a path form {path:0,capactity:100,status:1} or an array of these values.  
+					All paths area initially set to {capactity:100,status:1} .  Zero is considered no capacity and for status unavailable  
+					Mechanism by which receiving route can send feed back on load.
+				</dd>
+			<dt>loadbalance.debug</dt><dd>Send medata data about routing to log<dd></dd>
+			<dt>loadbalance.list</dt><dd>Send medata data message about routing to admin port</dd>
+			<dt>loadbalance.route</dt><dd>
+					Add route based based on template using payload of form, e.g. {url:"/localhost:1808/sticky1"} 
+				</dd>
+		</dl>
+	</p>
+	<p>
+	If only one path then dynamic path can be selected.  
+	It then presents a list of possible template nodes that exist in current workflow.  
+	Only "http request" types work at this stage.
+	If a template is accepted then route can be established using this template node.
+	For "http request" node the url must be blank to allow the process to work.
+	Response are past back thru the second port.  Errors are past back thru admoin port (admin) and the route made unavailable.
+	Can be made available by resending add request or via loadbalance topic.
+	</p>
+	<p>
+ 	Each time a message is sent the capicity is decremented by 1 and incremented by 1 on receiption of response.
+	Thus messages sent to route can be constrained by number outstanding on response. 
 	</p>
 
 </script>
@@ -87,11 +105,15 @@
         </select>
     </div>
     <div class="form-row">
-        <label for="node-input-noavailablity"><i class="fa fa-list-ul"></i> At no availabilty</label>
-        <select id="node-input-noavailablity" placeholder="noavailablity">
+        <label for="node-input-noavailability"><i class="fa fa-list-ul"></i> At no availabilty</label>
+        <select id="node-input-noavailability" placeholder="noavailability">
             <option value="discard">Discard</option> 
             <option value="admin">Send admin port</option> 
         </select>
+    </div>
+    <div class="form-row form-row-http-in-dynamic hide">
+        <label for="node-input-dynamic"><i class="fa fa-list-ul"></i> Dynamic template from workflow</label>
+		<select id="node-input-dynamic" placeholder="dynamic"></select>
     </div>
 
 </script>
@@ -104,10 +126,11 @@
             routes: {value:1,required:true},
             outputs: {value:1,required:true},
             selection: {value:"next",required:true},
-            noavailablity: {value:"admin",required:true},
+            noavailability: {value:"admin",required:true},
             nocapacity: {value:"admin",required:true},
             defaultcapacity: {value:100,required:true},
             sticky: {value:"",required:false},
+            dynamic: {value:"",required:false},
             mps: {value:"",required:false}
         },
 	    inputs:1,
@@ -124,9 +147,26 @@
         oneditprepare: function() {
         	var node=this;
         	this.outputs=1+this.routes;
+        	var nodesAll = RED.nodes.filterNodes({z:node.z});
+ 	      	for (let n of nodesAll) {
+        		if(n.id==node.id) continue;
+        		try{
+        			$('#node-input-dynamic').append(
+       					$('<option value="'+n.id+'" '+(n.id==node.dynamic?"selected":"")+' />').text(n.name==""?n.type +"("+n.id+")":n.name)
+        			);
+        		} catch(e) {
+        			console.error("nodeall "+e);
+        		}
+        	}
+        	
         	$('#node-input-routes').change(function () {
         		node.outputs=1+Number($('#node-input-routes').val());
-        	});
+                if ($(this).val()==1) {
+                    $(".form-row-http-in-dynamic").show();
+                } else {
+                    $(".form-row-http-in-dynamic").hide();
+                }
+        	}).change();
         	
             $("#node-input-selection").change(function() {
                 if (['foldweighted','nextsmoothed'].includes( $(this).val() )) {

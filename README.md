@@ -1,6 +1,6 @@
 # node-red-contrib-loadbalance ![loadbalance](loadbalance/icons/icons8-multicast-80.png "Load Balance") 
 
-[Node-Red][1] node to [load balance][2].
+[Node-Red][1] node to [load balance][2] either with static routes or dynamic routes.
 
 Basically spreads input messages to flows based on:
 * Round Robin - next in list then start at being again
@@ -22,8 +22,19 @@ At no capacity is visible when capacity based mode is selected. Allows choice of
 
 At no availablity allows  choice of what is to be done with message when there is no availabilty.  Messages either discarded or sent to admin port.
 
+#### Static paths
 
 ![Load Balance](documentation/loadbalance.JPG "Load Balance")
+
+#### Dynamic paths
+When paths equal 1 a template in workflow can be selected.
+
+![Load Balance Dynamic](documentation/loadbalanceDynamic.JPG "Load Balance Dynamic")
+
+Only "http request" types work at this stage and it requires the template to have url set to blank.
+See test for details.
+
+
 
 # Management
 
@@ -49,13 +60,20 @@ Will send metadata about queues to admin output port.
 
 Will send metadata about queues to error log so visible in debug console.
 
+## msg.topic loanbalance.route
 
-## To be done
+If paths set to 1 and template selected enables dynamic routing.
+Current only "http request" template allowed.  
+Form of payload {url:"/a/url/path"}
+
+
+## Wish List
 
 1. Persist path states and capacity on recycle 
-* Am alive polling, keep alive can be used to trigger remote to send capacity metrics
-* Dynamic addition of paths by remote nodes subscribing or discovery
-* Some base capacity calls to remote engines 
+* Alive polling, keep alive can be used to trigger remote to send capacity metrics (note, this could be done by flow)
+* Other dynamic template node types e.g. mq, http out etc.
+* Dynamic addition of paths by discovery (note, this could be done by flow)
+* Some base capacity calls to remote engines  (note, this could be done by flow)
 * mps - default base capacity set per path at setup
 
 
@@ -65,6 +83,7 @@ Run the following command in the root directory of your Node-RED install
 
     npm install node-red-contrib-loadbalance
 
+#### Tests
 
 Test/example flow in  test/testflow.json
 
@@ -73,6 +92,10 @@ Test/example flow in  test/testflow.json
 Test flow for sticky feature in test/testSticky.json
 
 ![Test Sticky](documentation/testSticky.JPG "Test Sticky flow")
+
+Test flow for sticky feature in test/testDynamic.json
+
+![Test Dynamic](documentation/testDynamic.JPG "Test Dynamic flow")
 
 
 # Author
