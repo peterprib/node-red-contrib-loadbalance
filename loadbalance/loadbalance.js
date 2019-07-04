@@ -1,6 +1,5 @@
-/*
- * Copyright (C) 2019 Jaroslav Peter Prib
- */
+const ts=(new Date().toString()).split(' ');
+console.log([parseInt(ts[2],10),ts[1],ts[4]].join(' ')+" - [info] loadbalance Copyright 2019 Jaroslav Peter Prib");
 function routeAdmin(msg) {
 	this.log("routeAdmin "+JSON.stringify(msg.payload));
 	switch (msg.payload.action) {
