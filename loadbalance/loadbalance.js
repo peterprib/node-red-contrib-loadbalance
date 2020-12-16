@@ -220,7 +220,7 @@ module.exports = function(RED) {
 			node.error("No Availability selection mode not found, value: "+node.noavailability);
 			this.pathNoAvailability=setPaths.admin;
 		}
-		RED.events.on("nodes-started",function() {
+		RED.events.on("flows:started",function() {
 	        if(node.dynamicRouting) {
 	            node.dynamicTemplate=RED.nodes.getNode(node.dynamic);
 	            if(!node.dynamicTemplate) {
