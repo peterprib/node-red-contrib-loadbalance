@@ -31,14 +31,17 @@ describe("fnv 32 Hash", function() {
 	});
 	it('setMax ', function(done) {
 		const a4=[0,1,2,3,4];
-		fnvHash.setMax(5);
-//		const hash=fnvHash.fnvHash.hashFunction();
+		fnvHash.setMax(4);
+		const hash=fnvHash.hashFunction();
+		
 		let results=[0,0,0,0,0]
 		all.split('').forEach(c=>results[hash(c)]++);
 		all.split('').forEach((c,i)=>results[hash(c+all.substring(0,i))]++);
 		all.split('').forEach((c,i)=>results[hash(all.substring(i))]++);
-		console.log(results)
-		assert.ok(a4.includes(hash("bc")));
+		console.log(results);
+		const bc=hash("bc");
+		console.log("bc: ",bc)
+		assert.ok(a4.includes(bc));
 		done();
 	});
 });
