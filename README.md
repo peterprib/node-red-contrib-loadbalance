@@ -4,6 +4,7 @@
 
 Basically spreads input messages to flows based on:
 * Round Robin - next in list then start at being again
+* Hash - Hash art of message to determine route (quasi sticky route)
 * Random - randomly across out paths
 * Fold on capacity - place load on first node in order with capacity.  Good for improving cache hit ratios. At full capacity random selection.
 * Next smoothing to average capacity - next that is >= average capacity to get smoothing of load. At full capacity random selection.
@@ -34,7 +35,7 @@ When paths equal 1 a template in workflow can be selected.
 Only "http request" types work at this stage and it requires the template to have url set to blank.
 See test for details.
 
-
+------------------------------------------------------------
 
 # Management
 
@@ -66,8 +67,24 @@ If paths set to 1 and template selected enables dynamic routing.
 Current only "http request" template allowed.  
 Form of payload {url:"/a/url/path"}
 
+------------------------------------------------------------
 
-## Wish List
+# Hash routing
+
+Routing can be based on a hash or a property in the message.  See pane below.
+Either FNV or Pearson hashing technique can be used.
+If Pearson at most 256 routes are possible as this is the lookup size used.
+The if an odd number of routes, 1 route will receive proportional less activity based number of routes. 
+
+![Hash Route Node](documentation/hashRouteNode.JPG "Hash Route")
+
+Example flow included in test folder.
+
+![Hash Route Test Flow](documentation/hashRoute.JPG "Hash Route Test Flow")
+
+------------------------------------------------------------
+
+# Wish List
 
 1. Persist path states and capacity on recycle 
 * Alive polling, keep alive can be used to trigger remote to send capacity metrics (note, this could be done by flow)
@@ -76,6 +93,7 @@ Form of payload {url:"/a/url/path"}
 * Some base capacity calls to remote engines  (note, this could be done by flow)
 * mps - default base capacity set per path at setup
 
+------------------------------------------------------------
 
 # Install
 
@@ -97,6 +115,13 @@ Test flow for sticky feature in test/testDynamic.json
 
 ![Test Dynamic](documentation/testDynamic.JPG "Test Dynamic flow")
 
+------------------------------------------------------------
+
+# Version
+
+0.5.0 Add hash on part of msg to determine path, improve dynamic and fix bug when duplicate path 
+
+0.4.0 Initial release
 
 # Author
   

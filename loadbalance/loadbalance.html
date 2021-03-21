@@ -1,30 +1,32 @@
 <script type="text/x-red" data-help-name="Load Balance">
-    <p>Load balance on outputs.  First port is admin port only.  
+	<p>Load balance on outputs.  First port is admin port only.  
 	Remaining ports are load balanced according to the selected method:</p>
-    <p>
+	<p>
 		<dl>
 			<dt>Round Robin</dt><dd>Next output path and when reaches last next is first in list</dd>
 			<dt>Random</dt><dd>Randomly picks next output path</dd>
 			<dt>Fold on capacity</dt><dd>Uses path with capacity first in list. If all at capacity then randomly.</dd>
 			<dt>Next below average capacity</dt><dd>Uses next path that is below average capacity. If all at same capacity then randomly.</dd>
+			<dt>Hash</dt><dd>Uses value from source as hash</dd>
 		</dl>
 	</p>
 	<p>If sticky selected it then assumes http message and adds a cookie to message which indicates path used.
-	If message has cookie it tries to honor path in cookie (is available). 
+	If message has cookie it tries to honor path in cookie (is available).
+	Note, for hash useful if nodes are dynamically changed or node failure.
 	</p>
 	<p>On no capacity</p>
 	<p>
 		<dl>
-    		<dt>Round Robin</dt><dd>See above</dd>
-   			<dt>Random</dt><dd>Randomly picks next output path regardless of capacity</dd> 
-    		<dt>Discard</dt><dd>Drops message</dd> 
-    		<dt>Admin port</dt><dd>Send message to admoin port 0</dd> 
+			<dt>Round Robin</dt><dd>See above</dd>
+				<dt>Random</dt><dd>Randomly picks next output path regardless of capacity</dd> 
+			<dt>Discard</dt><dd>Drops message</dd> 
+			<dt>Admin port</dt><dd>Send message to admin port 0</dd> 
 		</dl>
 	</p>
 
-	<p>On no avaliability
+	<p>On no availability
 		<dl>
-   			<dt>Discard</dt><dd>Drops message</dd> 
+				<dt>Discard</dt><dd>Drops message</dd> 
 			<dt>Send admin port</dt><dd>Send message to admin port 0</dd> 
 		</dl>
 	</p>
@@ -50,7 +52,7 @@
 	Only "http request" types work at this stage.
 	If a template is accepted then route can be established using this template node.
 	For "http request" node the url must be blank to allow the process to work.
-	Response are past back thru the second port.  Errors are past back thru admoin port (admin) and the route made unavailable.
+	Response are past back thru the second port.  Errors are past back thru admin port (admin) and the route made unavailable.
 	Can be made available by resending add request or via loadbalance topic.
 	</p>
 	<p>
@@ -58,132 +60,165 @@
 	Thus messages sent to route can be constrained by number outstanding on response. 
 	</p>
 
+	<h2>Hash Routing</h2>
+	<p>
+	A string property is provided that is hashed to select which path.
+	</p>
+	<p>
+	<dl>
+	<dt>Pearson</dt><dd>Up to 256 routes are possible as table is used to hash an route</dd>
+	<dt>FVN</dt><dd>FVN1 32 bit hash performed and modulus on number of routes to select route</dd>
+	<dl/>
+	</p>
 </script>
 
 <script type="text/x-red" data-template-name="Load Balance">
 
-    <div class="form-row">
-        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
-        <input type="text" id="node-input-name" placeholder="Name">
-    </div>
-    <div class="form-row form-row-http-in-sticky">
-        <label>&nbsp;</label>
-        <input type="checkbox" id="node-input-sticky" style="display: inline-block; width: auto; vertical-align: top;">
-        <label for="node-input-sticky" style="width: 70%;">sticky (HTTP messages using cookie)</label>
-    </div>
-    <div class="form-row">
-        <label for="node-input-selection"><i class="fa fa-list-ul"></i> Selection Method</label>
-        <select id="node-input-selection" placeholder="selection">
-            <option value="next">Round Robin</option>
-            <option value="random">Random</option> 
-            <option value="foldweighted">Fold on capacity</option> 
-            <option value="nextsmoothed">Next smoothing to average capacity</option> 
-        </select>
-    </div>
+	<div class="form-row">
+		<label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+		<input type="text" id="node-input-name" placeholder="Name">
+	</div>
+	<div class="form-row form-row-http-in-sticky">
+		<label>&nbsp;</label>
+		<input type="checkbox" id="node-input-sticky" style="display: inline-block; width: auto; vertical-align: top;">
+		<label for="node-input-sticky" style="width: 70%;">sticky (HTTP messages using cookie)</label>
+	</div>
+	<div class="form-row">
+		<label for="node-input-selection"><i class="fa fa-list-ul"></i> Selection Method</label>
+		<select id="node-input-selection" placeholder="selection">
+			<option value="next">Round Robin</option>
+			<option value="random">Random</option> 
+			<option value="hash">Hash</option> 
+			<option value="foldweighted">Fold on capacity</option>
+			<option value="nextsmoothed">Next smoothing to average capacity</option> 
+		</select>
+	</div>
+	<div class="form-row form-row-http-in-hashType hide">
+		<label for="node-input-hashType"><i class="fa fa-list-ul"></i> Hash Type</label>
+		<select id="node-input-hashType" placeholder="hashType">
+			<option value="pearson">Pearson</option>
+			<option value="fvn">FVN</option>
+		</select>
+	</div>
+	<div class="form-row form-row-http-in-sourceProperty hide">
+		<label for="node-input-sourceProperty" style="white-space: nowrap"><i class="icon-bookmark"></i> Source Property </label>
+		<input type="text" id="node-input-sourceProperty" placeholder="msg.topic">
+	</div>
+	<div class="form-row form-row-http-in-mps hide">
+		<label>&nbsp;</label>
+		<input type="checkbox" id="node-input-mps" style="display: inline-block; width: auto; vertical-align: top;">
+		<label for="node-input-mps" style="width: 70%;">Messages per second capacity</label>
+	</div>
+	<div class="form-row form-row-http-in-defaultcapacity hide">
+		<label for="node-input-defaultcapacity"><i class="icon-bookmark"></i> Default Capacity</label>
+		<input type="number" id="node-input-defaultcapacity" placeholder="defaultcapacity" min=1 max=1000000 step=10>
+	</div>
 
-    <div class="form-row form-row-http-in-mps hide">
-        <label>&nbsp;</label>
-        <input type="checkbox" id="node-input-mps" style="display: inline-block; width: auto; vertical-align: top;">
-        <label for="node-input-mps" style="width: 70%;">Messages per second capacity</label>
-    </div>
-    <div class="form-row form-row-http-in-defaultcapacity hide">
-        <label for="node-input-defaultcapacity"><i class="icon-bookmark"></i> Default Capacity</label>
-        <input type="number" id="node-input-defaultcapacity" placeholder="defaultcapacity" min=1 max=1000000 step=10>
-    </div>
-
-    <div class="form-row">
-        <label for="node-input-routes"><i class="icon-bookmark"></i> Paths</label>
-        <input type="number" id="node-input-routes" placeholder="Outputs" min=1 max=100>
-    </div>
-    <div class="form-row form-row-http-in-nocapacity hide">
-        <label for="node-input-nocapacity"><i class="fa fa-list-ul"></i> At no capacity</label>
-        <select id="node-input-nocapacity" placeholder="nocapacity">
-            <option value="next">Round Robin</option>
-            <option value="random">Random</option> 
-            <option value="discard">Discard</option> 
-            <option value="admin">Send admin port</option> 
-        </select>
-    </div>
-    <div class="form-row">
-        <label for="node-input-noavailability"><i class="fa fa-list-ul"></i> At no availabilty</label>
-        <select id="node-input-noavailability" placeholder="noavailability">
-            <option value="discard">Discard</option> 
-            <option value="admin">Send admin port</option> 
-        </select>
-    </div>
-    <div class="form-row form-row-http-in-dynamic hide">
-        <label for="node-input-dynamic"><i class="fa fa-list-ul"></i> Dynamic template from workflow</label>
+	<div class="form-row">
+		<label for="node-input-routes"><i class="icon-bookmark"></i> Paths</label>
+		<input type="number" id="node-input-routes" placeholder="Outputs" min=1 max=100>
+	</div>
+	<div class="form-row form-row-http-in-nocapacity hide">
+		<label for="node-input-nocapacity"><i class="fa fa-list-ul"></i> At no capacity</label>
+		<select id="node-input-nocapacity" placeholder="nocapacity">
+			<option value="next">Round Robin</option>
+			<option value="random">Random</option> 
+			<option value="discard">Discard</option> 
+			<option value="admin">Send admin port</option> 
+		</select>
+	</div>
+	<div class="form-row">
+		<label for="node-input-noavailability"><i class="fa fa-list-ul"></i> At no availabilty</label>
+		<select id="node-input-noavailability" placeholder="noavailability">
+			<option value="discard">Discard</option> 
+			<option value="admin">Send admin port</option> 
+		</select>
+	</div>
+	<div class="form-row form-row-http-in-dynamic hide">
+		<label for="node-input-dynamic"><i class="fa fa-list-ul"></i> Dynamic template from workflow</label>
 		<select id="node-input-dynamic" placeholder="dynamic"></select>
-    </div>
+	</div>
 
 </script>
 
 <script type="text/javascript">
-    RED.nodes.registerType('Load Balance',{
-    	category: 'function',
-        defaults: {
-            name: {value:"",required:false},
-            routes: {value:1,required:true},
-            outputs: {value:1,required:true},
-            selection: {value:"next",required:true},
-            noavailability: {value:"admin",required:true},
-            nocapacity: {value:"admin",required:true},
-            defaultcapacity: {value:100,required:true},
-            sticky: {value:"",required:false},
-            dynamic: {value:"",required:false},
-            mps: {value:"",required:false}
-        },
-	    inputs:1,
-        inputLabels: "",
-        outputs:1,
-        outputLabels: ["admin"],
-        icon: "icons8-multicast-80.png",
-        label: function() {
-            return this.name||this._("Load Balance");
-        },
-        labelStyle: function() {
-            return "node_label_italic";
-        },
-        oneditprepare: function() {
-        	var node=this;
-        	this.outputs=1+this.routes;
-        	var nodesAll = RED.nodes.filterNodes({z:node.z});
- 	      	for (let n of nodesAll) {
-        		if(n.id==node.id) continue;
-        		try{
-        			$('#node-input-dynamic').append(
-       					$('<option value="'+n.id+'" '+(n.id==node.dynamic?"selected":"")+' />').text(n.name==""?n.type +"("+n.id+")":n.name)
-        			);
-        		} catch(e) {
-        			console.error("nodeall "+e);
-        		}
-        	}
-        	
-        	$('#node-input-routes').change(function () {
-        		node.outputs=1+Number($('#node-input-routes').val());
-                if ($(this).val()==1) {
-                    $(".form-row-http-in-dynamic").show();
-                } else {
-                    $(".form-row-http-in-dynamic").hide();
-                }
-        	}).change();
-        	
-            $("#node-input-selection").change(function() {
-                if (['foldweighted','nextsmoothed'].includes( $(this).val() )) {
-                    $(".form-row-http-in-defaultcapacity").show();
-                    $(".form-row-http-in-nocapacity").show();
-                    $(".form-row-http-in-mps").show();
-                } else {
-                    $(".form-row-http-in-defaultcapacity").hide();
-                    $(".form-row-http-in-nocapacity").hide();
-                    $(".form-row-http-in-mps").hide();
-                }
-            }).change();
-        	
-        },
-        oneditsave: function() {
-        },
-        oneditresize: function(size) {
-        }
-    });
+	RED.nodes.registerType('Load Balance',{
+		category: 'function',
+		defaults: {
+			defaultcapacity: {value:100,required:true},
+			dynamic: {value:"",required:false},
+			hashType:{value:"pearson"},
+			mps: {value:"",required:false},
+			name: {value:"",required:false},
+			noavailability: {value:"admin",required:true},
+			nocapacity: {value:"admin",required:true},
+			outputs: {value:1,required:true},
+			routes: {value:1,required:true},
+			selection: {value:"next",required:true},
+			sourceProperty:{value:"msg.topic"},
+			sticky: {value:"",required:false},
+		},
+		inputs:1,
+		inputLabels: "",
+		outputs:1,
+		outputLabels: ["admin"],
+		icon: "icons8-multicast-80.png",
+		label: function() {
+			return this.name||this._("Load Balance");
+		},
+		labelStyle: function() {
+			return "node_label_italic";
+		},
+		oneditprepare: function() {
+			var node=this;
+			this.outputs=1+this.routes;
+			var nodesAll = RED.nodes.filterNodes({z:node.z});
+ 		  	for (let n of nodesAll) {
+				if(n.id==node.id) continue;
+				try{
+					$('#node-input-dynamic').append(
+						$('<option value="'+n.id+'" '+(n.id==node.dynamic?"selected":"")+' />').text(n.name==""?n.type +"("+n.id+")":n.name)
+					);
+				} catch(e) {
+					console.error("nodeall "+e);
+				}
+			}
+			
+			$('#node-input-routes').change(function () {
+				node.outputs=1+Number($('#node-input-routes').val());
+				if ($(this).val()==1) {
+					$(".form-row-http-in-dynamic").show();
+				} else {
+					$(".form-row-http-in-dynamic").hide();
+				}
+			}).change();
+			
+			$("#node-input-selection").change(function() {
+				const selection=$(this).val();
+				if (['foldweighted','nextsmoothed'].includes(selection)) {
+					$(".form-row-http-in-defaultcapacity").show();
+					$(".form-row-http-in-nocapacity").show();
+					$(".form-row-http-in-mps").show();
+				} else {
+					$(".form-row-http-in-defaultcapacity").hide();
+					$(".form-row-http-in-nocapacity").hide();
+					$(".form-row-http-in-mps").hide();
+				}
+				if (['hash'].includes(selection)) {
+					$(".form-row-http-in-hashType").show();
+					$(".form-row-http-in-sourceProperty").show();
+					$(".form-row-http-in-sticky").hide();
+				} else {
+					$(".form-row-http-in-hashType").hide();
+					$(".form-row-http-in-sourceProperty").hide();
+					$(".form-row-http-in-sticky").show();
+				}
+			}).change();
+			
+		},
+		oneditsave: function() {
+		},
+		oneditresize: function(size) {
+		}
+	});
 </script>

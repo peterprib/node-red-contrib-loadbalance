@@ -1,1 +1,1400 @@
-[{"id":"301b3265.8f9cee","type":"tab","label":"test load balance","disabled":false,"info":""},{"id":"618c1697.3a70c8","type":"Load Balance","z":"301b3265.8f9cee","name":"round robin","routes":"3","outputs":4,"selection":"next","noavailablity":"admin","defaultcapacity":"100","mps":"","x":430,"y":40,"wires":[["e2843e9d.54aa2"],["c6221507.2a06e8"],["791f86bb.fa5ef8"],["b391060e.9d8138"]]},{"id":"6be46a21.f93954","type":"Load Balance","z":"301b3265.8f9cee","name":"random","routes":"3","outputs":4,"selection":"random","noavailablity":"admin","defaultcapacity":"100","mps":"","x":420,"y":120,"wires":[["e2843e9d.54aa2"],["c6221507.2a06e8"],["791f86bb.fa5ef8"],["b391060e.9d8138"]]},{"id":"bc1e204.47754e","type":"inject","z":"301b3265.8f9cee","name":"","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":80,"y":20,"wires":[["618c1697.3a70c8"]]},{"id":"a7de1d90.4f6d5","type":"inject","z":"301b3265.8f9cee","name":"","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":80,"y":100,"wires":[["6be46a21.f93954"]]},{"id":"e2843e9d.54aa2","type":"debug","z":"301b3265.8f9cee","name":"admin","active":true,"tosidebar":true,"console":false,"tostatus":false,"complete":"true","targetType":"full","x":730,"y":60,"wires":[]},{"id":"c6221507.2a06e8","type":"debug","z":"301b3265.8f9cee","name":"p1","active":true,"tosidebar":true,"console":false,"tostatus":false,"complete":"payload","targetType":"msg","x":730,"y":120,"wires":[]},{"id":"791f86bb.fa5ef8","type":"debug","z":"301b3265.8f9cee","name":"p2","active":true,"tosidebar":true,"console":false,"tostatus":false,"complete":"payload","targetType":"msg","x":730,"y":180,"wires":[]},{"id":"f3683760.0faed8","type":"inject","z":"301b3265.8f9cee","name":"loadbalance path 0 capacity 0","topic":"loadbalance","payload":"{\"path\":0,\"capacity\":0}","payloadType":"json","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":140,"y":440,"wires":[["7029d6c7.f1dd68","6be46a21.f93954","618c1697.3a70c8","37fafb63.109f84","f16c63dd.14548"]]},{"id":"b3704c8b.4a7c9","type":"inject","z":"301b3265.8f9cee","name":"","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":80,"y":180,"wires":[["7029d6c7.f1dd68"]]},{"id":"7029d6c7.f1dd68","type":"Load Balance","z":"301b3265.8f9cee","name":"fold on capacity","routes":"3","outputs":4,"selection":"foldweighted","noavailablity":"admin","nocapacity":"next","defaultcapacity":"100","mps":"","x":440,"y":200,"wires":[["e2843e9d.54aa2"],["c6221507.2a06e8"],["791f86bb.fa5ef8"],["b391060e.9d8138"]]},{"id":"15bb8bae.af2514","type":"inject","z":"301b3265.8f9cee","name":"loadbalance.list","topic":"loadbalance.list","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":100,"y":300,"wires":[["37fafb63.109f84"]]},{"id":"be861c68.39003","type":"inject","z":"301b3265.8f9cee","name":"loadbalance path 0 capacity 100","topic":"loadbalance","payload":"{\"path\":0,\"capacity\":100}","payloadType":"json","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":150,"y":480,"wires":[["7029d6c7.f1dd68","6be46a21.f93954","618c1697.3a70c8","37fafb63.109f84","f16c63dd.14548"]]},{"id":"37fafb63.109f84","type":"Load Balance","z":"301b3265.8f9cee","name":"next below avg capacity","routes":"3","outputs":4,"selection":"nextsmoothed","noavailablity":"admin","nocapacity":"admin","defaultcapacity":"100","mps":"","x":470,"y":280,"wires":[["e2843e9d.54aa2"],["c6221507.2a06e8"],["791f86bb.fa5ef8"],["b391060e.9d8138"]]},{"id":"b2161de7.bb0af","type":"inject","z":"301b3265.8f9cee","name":"","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":80,"y":260,"wires":[["37fafb63.109f84"]]},{"id":"9b0ff398.b5cfb","type":"inject","z":"301b3265.8f9cee","name":"loadbalance.list","topic":"loadbalance.list","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":100,"y":60,"wires":[["618c1697.3a70c8"]]},{"id":"6458dc41.6eb5f4","type":"inject","z":"301b3265.8f9cee","name":"loadbalance.debug","topic":"loadbalance.debug","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":110,"y":140,"wires":[["6be46a21.f93954"]]},{"id":"19f5da5d.da0296","type":"inject","z":"301b3265.8f9cee","name":"loadbalance.list","topic":"loadbalance.list","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":100,"y":220,"wires":[["7029d6c7.f1dd68"]]},{"id":"b391060e.9d8138","type":"debug","z":"301b3265.8f9cee","name":"p3","active":true,"tosidebar":true,"console":false,"tostatus":false,"complete":"payload","targetType":"msg","x":730,"y":240,"wires":[]},{"id":"56c13557.679a7c","type":"inject","z":"301b3265.8f9cee","name":"loadbalance path all capacity 0","topic":"loadbalance","payload":"[{\"path\":0,\"capacity\":0},{\"path\":1,\"capacity\":0},{\"path\":2,\"capacity\":0}]","payloadType":"json","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":150,"y":520,"wires":[["37fafb63.109f84","7029d6c7.f1dd68","6be46a21.f93954","618c1697.3a70c8"]]},{"id":"ffd4ef80.59639","type":"inject","z":"301b3265.8f9cee","name":"loadbalance path all capacity 100","topic":"loadbalance","payload":"[{\"path\":0,\"capacity\":100},{\"path\":1,\"capacity\":100},{\"path\":2,\"capacity\":100}]","payloadType":"json","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":150,"y":560,"wires":[["37fafb63.109f84","7029d6c7.f1dd68","6be46a21.f93954","618c1697.3a70c8","f16c63dd.14548"]]},{"id":"79ef4eb7.20595","type":"inject","z":"301b3265.8f9cee","name":"loadbalance path all status: 1","topic":"loadbalance","payload":"[{\"path\":0,\"status\":1},{\"path\":1,\"status\":1},{\"path\":2,\"status\":1}]","payloadType":"json","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":140,"y":680,"wires":[["37fafb63.109f84","7029d6c7.f1dd68","6be46a21.f93954","618c1697.3a70c8","f16c63dd.14548"]]},{"id":"e3fe5a10.988198","type":"inject","z":"301b3265.8f9cee","name":"loadbalance path all status: 0","topic":"loadbalance","payload":"[{\"path\":0,\"status\":0},{\"path\":1,\"status\":0},{\"path\":2,\"status\":0}]","payloadType":"json","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":140,"y":640,"wires":[["37fafb63.109f84","7029d6c7.f1dd68","6be46a21.f93954","618c1697.3a70c8"]]},{"id":"6ef383eb.0b3e4c","type":"inject","z":"301b3265.8f9cee","name":"loadbalance path 0 status: 0","topic":"loadbalance","payload":"{\"path\":0,\"status\":0}","payloadType":"json","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":140,"y":600,"wires":[["37fafb63.109f84","7029d6c7.f1dd68","6be46a21.f93954","618c1697.3a70c8","f16c63dd.14548"]]},{"id":"f16c63dd.14548","type":"Load Balance","z":"301b3265.8f9cee","name":"fold on capacity with mps + discard","routes":"3","outputs":4,"selection":"foldweighted","noavailablity":"discard","nocapacity":"discard","defaultcapacity":"3","mps":true,"x":500,"y":380,"wires":[["e2843e9d.54aa2"],["c6221507.2a06e8"],["791f86bb.fa5ef8"],["b391060e.9d8138"]]},{"id":"296f2734.4a3428","type":"inject","z":"301b3265.8f9cee","name":"loadbalance.list","topic":"loadbalance.list","payload":"","payloadType":"date","repeat":"","crontab":"","once":false,"onceDelay":0.1,"x":100,"y":380,"wires":[["f16c63dd.14548"]]},{"id":"3fd3724f.af0f3e","type":"inject","z":"301b3265.8f9cee","name":"","topic":"","payload":"","payloadType":"date","repeat":"","crontab":"","once":true,"onceDelay":0.1,"x":90,"y":340,"wires":[["f16c63dd.14548"]]},{"id":"1be350ed.ca44ef","type":"comment","z":"301b3265.8f9cee","name":"Load Injector requires nodered-contribut-prib-functions","info":"","x":560,"y":600,"wires":[]},{"id":"5c1c0279.61b74c","type":"Load Injector","z":"301b3265.8f9cee","name":"Load Inject for 10 seconds","thinktimemin":"100","thinktimemax":"200","runtime":"10","payload":"","payloadType":"date","x":500,"y":540,"wires":[["f16c63dd.14548"]]}]
+[
+    {
+        "id": "c450bf61.2740a",
+        "type": "tab",
+        "label": "hash routing",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "8296331f.9cbd4",
+        "type": "tab",
+        "label": "load balance test dynamic",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "301b3265.8f9cee",
+        "type": "tab",
+        "label": "test load balance",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "ab3caaca.c63fa8",
+        "type": "tab",
+        "label": "sticky",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "d4abab41.2f6168",
+        "type": "Load Balance",
+        "z": "c450bf61.2740a",
+        "defaultcapacity": 100,
+        "dynamic": "9e95eb49.6f9ad8",
+        "hashType": "pearson",
+        "mps": "",
+        "name": "test",
+        "noavailability": "admin",
+        "nocapacity": "admin",
+        "outputs": 5,
+        "routes": "4",
+        "selection": "hash",
+        "sourceProperty": "msg.payload.name",
+        "sticky": false,
+        "x": 510,
+        "y": 280,
+        "wires": [
+            [
+                "313166e8.63c9ba"
+            ],
+            [
+                "8854c7a1.3f2c58"
+            ],
+            [
+                "5f612dcc.aa3f04"
+            ],
+            [
+                "87588ca1.52c1f"
+            ],
+            [
+                "2bfd15e8.5db44a"
+            ]
+        ]
+    },
+    {
+        "id": "9e95eb49.6f9ad8",
+        "type": "data-generator",
+        "z": "c450bf61.2740a",
+        "name": "",
+        "field": "payload",
+        "fieldType": "msg",
+        "syntax": "json",
+        "template": "{\n    \"name\": \"{{firstName}} {{lastName}}\",\n    \"work\": \"{{company}}\",\n    \"email\": \"{{email}}\",\n    \"address\": \"{{int 1 100}} {{street}}\",\n    \"country\": \"{{country}}\"\n}",
+        "x": 220,
+        "y": 300,
+        "wires": [
+            [
+                "d4abab41.2f6168"
+            ]
+        ]
+    },
+    {
+        "id": "313166e8.63c9ba",
+        "type": "Monitor Flow",
+        "z": "c450bf61.2740a",
+        "name": "",
+        "x": 730,
+        "y": 180,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8854c7a1.3f2c58",
+        "type": "Monitor Flow",
+        "z": "c450bf61.2740a",
+        "name": "",
+        "x": 730,
+        "y": 240,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "5f612dcc.aa3f04",
+        "type": "Monitor Flow",
+        "z": "c450bf61.2740a",
+        "name": "",
+        "x": 730,
+        "y": 300,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "87588ca1.52c1f",
+        "type": "Monitor Flow",
+        "z": "c450bf61.2740a",
+        "name": "",
+        "x": 730,
+        "y": 360,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "2bfd15e8.5db44a",
+        "type": "Monitor Flow",
+        "z": "c450bf61.2740a",
+        "name": "",
+        "x": 740,
+        "y": 420,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "6028ca49.83db64",
+        "type": "Load Injector",
+        "z": "c450bf61.2740a",
+        "name": "",
+        "thinktimemin": "1",
+        "thinktimemax": "10",
+        "runtime": "10",
+        "payload": "",
+        "payloadType": "date",
+        "x": 130,
+        "y": 380,
+        "wires": [
+            [
+                "9e95eb49.6f9ad8"
+            ]
+        ]
+    },
+    {
+        "id": "ce869d82.44d88",
+        "type": "inject",
+        "z": "c450bf61.2740a",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 100,
+        "y": 200,
+        "wires": [
+            [
+                "9e95eb49.6f9ad8"
+            ]
+        ]
+    },
+    {
+        "id": "5e7bc7d7.4cb3b8",
+        "type": "Load Balance",
+        "z": "c450bf61.2740a",
+        "defaultcapacity": 100,
+        "dynamic": "313166e8.63c9ba",
+        "hashType": "pearson",
+        "mps": "",
+        "name": "hash dynamic",
+        "noavailability": "discard",
+        "nocapacity": "admin",
+        "outputs": 2,
+        "routes": 1,
+        "selection": "hash",
+        "sourceProperty": "msg.topic",
+        "sticky": "",
+        "x": 440,
+        "y": 500,
+        "wires": [
+            [
+                "313166e8.63c9ba"
+            ],
+            [
+                "8854c7a1.3f2c58"
+            ]
+        ]
+    },
+    {
+        "id": "7865d775.4cbae8",
+        "type": "inject",
+        "z": "c450bf61.2740a",
+        "name": "test single",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 120,
+        "y": 480,
+        "wires": [
+            [
+                "5e7bc7d7.4cb3b8"
+            ]
+        ]
+    },
+    {
+        "id": "a9922eb0.d8aa1",
+        "type": "Load Injector",
+        "z": "c450bf61.2740a",
+        "name": "",
+        "thinktimemin": "1",
+        "thinktimemax": "10",
+        "runtime": "10",
+        "payload": "",
+        "payloadType": "date",
+        "x": 110,
+        "y": 560,
+        "wires": [
+            [
+                "5e7bc7d7.4cb3b8"
+            ]
+        ]
+    },
+    {
+        "id": "b529d97f.9032e8",
+        "type": "http request",
+        "z": "8296331f.9cbd4",
+        "name": "load balance template",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "authType": "basic",
+        "x": 400,
+        "y": 140,
+        "wires": [
+            [
+                "6a2b3067.0fe8d"
+            ]
+        ]
+    },
+    {
+        "id": "741e0bd9.05cca4",
+        "type": "inject",
+        "z": "8296331f.9cbd4",
+        "name": "test send",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 140,
+        "y": 140,
+        "wires": [
+            [
+                "b529d97f.9032e8"
+            ]
+        ]
+    },
+    {
+        "id": "2e77459c.7620da",
+        "type": "debug",
+        "z": "8296331f.9cbd4",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 830,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "9e40352e.1211d8",
+        "type": "http in",
+        "z": "8296331f.9cbd4",
+        "name": "",
+        "url": "/loadbalance/sticky1",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 170,
+        "y": 180,
+        "wires": [
+            [
+                "e2cb8aa8.db4788"
+            ]
+        ]
+    },
+    {
+        "id": "70e1cbc9.11b944",
+        "type": "Load Balance",
+        "z": "8296331f.9cbd4",
+        "defaultcapacity": 100,
+        "dynamic": "b529d97f.9032e8",
+        "mps": "",
+        "name": "dynamic round robin",
+        "noavailability": "admin",
+        "nocapacity": "admin",
+        "outputs": 2,
+        "routes": 1,
+        "selection": "next",
+        "sourceProperty": "",
+        "sticky": "",
+        "x": 400,
+        "y": 340,
+        "wires": [
+            [
+                "cdecf7c6.ea45c8"
+            ],
+            [
+                "238551db.3ed56e"
+            ]
+        ]
+    },
+    {
+        "id": "e324f699.b639e8",
+        "type": "inject",
+        "z": "8296331f.9cbd4",
+        "name": "",
+        "props": [
+            {
+                "p": "payload",
+                "v": "",
+                "vt": "date"
+            },
+            {
+                "p": "topic",
+                "v": "",
+                "vt": "string"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 140,
+        "y": 300,
+        "wires": [
+            [
+                "70e1cbc9.11b944"
+            ]
+        ]
+    },
+    {
+        "id": "a55428c3.96a308",
+        "type": "http response",
+        "z": "8296331f.9cbd4",
+        "name": "",
+        "statusCode": "200",
+        "headers": {},
+        "x": 840,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "16f9a5ac.e38c5a",
+        "type": "debug",
+        "z": "8296331f.9cbd4",
+        "name": "admin",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "x": 830,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "32c9118a.74214e",
+        "type": "debug",
+        "z": "8296331f.9cbd4",
+        "name": "path 0  response",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 800,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "69ad0d33.a9a854",
+        "type": "inject",
+        "z": "8296331f.9cbd4",
+        "name": "add sticky1",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "loadbalance.route",
+        "payload": "{\"action\":\"add\",\"url\":\"localhost:1880/loadbalance/sticky1\"}",
+        "payloadType": "json",
+        "x": 140,
+        "y": 340,
+        "wires": [
+            [
+                "70e1cbc9.11b944"
+            ]
+        ]
+    },
+    {
+        "id": "d3f60d4b.6565b",
+        "type": "inject",
+        "z": "8296331f.9cbd4",
+        "name": "loadbalance.list",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "loadbalance.list",
+        "payload": "",
+        "payloadType": "date",
+        "x": 160,
+        "y": 500,
+        "wires": [
+            [
+                "70e1cbc9.11b944"
+            ]
+        ]
+    },
+    {
+        "id": "e2cb8aa8.db4788",
+        "type": "function",
+        "z": "8296331f.9cbd4",
+        "name": "",
+        "func": "if(msg.payload.message) throw Error(\"In loop\")\nmsg.payload={message:\"test\",url:msg.req.url}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "x": 400,
+        "y": 200,
+        "wires": [
+            [
+                "18ba1b5.28eb3e5"
+            ]
+        ]
+    },
+    {
+        "id": "f4bf66ca.0c44d8",
+        "type": "http in",
+        "z": "8296331f.9cbd4",
+        "name": "",
+        "url": "/loadbalance/sticky2",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 170,
+        "y": 220,
+        "wires": [
+            [
+                "e2cb8aa8.db4788"
+            ]
+        ]
+    },
+    {
+        "id": "ef8293d3.5bf3f",
+        "type": "inject",
+        "z": "8296331f.9cbd4",
+        "name": "add sticky2",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "loadbalance.route",
+        "payload": "{\"action\":\"add\",\"url\":\"localhost:1880/loadbalance/sticky2\"}",
+        "payloadType": "json",
+        "x": 140,
+        "y": 380,
+        "wires": [
+            [
+                "70e1cbc9.11b944"
+            ]
+        ]
+    },
+    {
+        "id": "70251afc.9c6924",
+        "type": "comment",
+        "z": "8296331f.9cbd4",
+        "name": "url being blank allows override by load balance",
+        "info": "",
+        "x": 450,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "5d2736a.95c66c8",
+        "type": "inject",
+        "z": "8296331f.9cbd4",
+        "name": "add badurl",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "loadbalance.route",
+        "payload": "{\"action\":\"add\",\"url\":\"/badurl\"}",
+        "payloadType": "json",
+        "x": 140,
+        "y": 420,
+        "wires": [
+            [
+                "70e1cbc9.11b944"
+            ]
+        ]
+    },
+    {
+        "id": "f3f980a7.c104e",
+        "type": "inject",
+        "z": "8296331f.9cbd4",
+        "name": "add notfound404",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "loadbalance.route",
+        "payload": "{\"action\":\"add\",\"url\":\"notfound404\"}",
+        "payloadType": "json",
+        "x": 160,
+        "y": 460,
+        "wires": [
+            [
+                "70e1cbc9.11b944"
+            ]
+        ]
+    },
+    {
+        "id": "618c1697.3a70c8",
+        "type": "Load Balance",
+        "z": "301b3265.8f9cee",
+        "defaultcapacity": "100",
+        "mps": "",
+        "name": "round robin",
+        "outputs": 4,
+        "routes": "3",
+        "selection": "next",
+        "x": 430,
+        "y": 40,
+        "wires": [
+            [
+                "e2843e9d.54aa2"
+            ],
+            [
+                "4625dae2.e9bc34"
+            ],
+            [
+                "54e8007a.13a2c"
+            ],
+            [
+                "9e0102e4.3139d"
+            ]
+        ]
+    },
+    {
+        "id": "6be46a21.f93954",
+        "type": "Load Balance",
+        "z": "301b3265.8f9cee",
+        "defaultcapacity": "100",
+        "mps": "",
+        "name": "random",
+        "outputs": 4,
+        "routes": "3",
+        "selection": "random",
+        "x": 420,
+        "y": 120,
+        "wires": [
+            [
+                "e2843e9d.54aa2"
+            ],
+            [
+                "4625dae2.e9bc34"
+            ],
+            [
+                "54e8007a.13a2c"
+            ],
+            [
+                "9e0102e4.3139d"
+            ]
+        ]
+    },
+    {
+        "id": "bc1e204.47754e",
+        "type": "inject",
+        "z": "301b3265.8f9cee",
+        "name": "",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 80,
+        "y": 20,
+        "wires": [
+            [
+                "618c1697.3a70c8"
+            ]
+        ]
+    },
+    {
+        "id": "a7de1d90.4f6d5",
+        "type": "inject",
+        "z": "301b3265.8f9cee",
+        "name": "",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 80,
+        "y": 100,
+        "wires": [
+            [
+                "6be46a21.f93954"
+            ]
+        ]
+    },
+    {
+        "id": "e2843e9d.54aa2",
+        "type": "debug",
+        "z": "301b3265.8f9cee",
+        "name": "admin",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "x": 790,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "f3683760.0faed8",
+        "type": "inject",
+        "z": "301b3265.8f9cee",
+        "name": "loadbalance path 0 capacity 0",
+        "props": [
+            {
+                "p": "payload",
+                "v": "{\"path\":0,\"capacity\":0}",
+                "vt": "json"
+            },
+            {
+                "p": "topic",
+                "v": "loadbalance",
+                "vt": "string"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "loadbalance",
+        "payload": "{\"path\":0,\"capacity\":0}",
+        "payloadType": "json",
+        "x": 140,
+        "y": 440,
+        "wires": [
+            [
+                "7029d6c7.f1dd68",
+                "6be46a21.f93954",
+                "618c1697.3a70c8",
+                "37fafb63.109f84",
+                "f16c63dd.14548"
+            ]
+        ]
+    },
+    {
+        "id": "b3704c8b.4a7c9",
+        "type": "inject",
+        "z": "301b3265.8f9cee",
+        "name": "",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 80,
+        "y": 180,
+        "wires": [
+            [
+                "7029d6c7.f1dd68"
+            ]
+        ]
+    },
+    {
+        "id": "7029d6c7.f1dd68",
+        "type": "Load Balance",
+        "z": "301b3265.8f9cee",
+        "defaultcapacity": "100",
+        "mps": "",
+        "name": "fold on capacity",
+        "nocapacity": "next",
+        "outputs": 4,
+        "routes": "3",
+        "selection": "foldweighted",
+        "x": 440,
+        "y": 200,
+        "wires": [
+            [
+                "e2843e9d.54aa2"
+            ],
+            [
+                "4625dae2.e9bc34"
+            ],
+            [
+                "54e8007a.13a2c"
+            ],
+            [
+                "9e0102e4.3139d"
+            ]
+        ]
+    },
+    {
+        "id": "15bb8bae.af2514",
+        "type": "inject",
+        "z": "301b3265.8f9cee",
+        "name": "loadbalance.list",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "loadbalance.list",
+        "payload": "",
+        "payloadType": "date",
+        "x": 100,
+        "y": 300,
+        "wires": [
+            [
+                "37fafb63.109f84"
+            ]
+        ]
+    },
+    {
+        "id": "be861c68.39003",
+        "type": "inject",
+        "z": "301b3265.8f9cee",
+        "name": "loadbalance path 0 capacity 100",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "loadbalance",
+        "payload": "{\"path\":0,\"capacity\":100}",
+        "payloadType": "json",
+        "x": 150,
+        "y": 480,
+        "wires": [
+            [
+                "7029d6c7.f1dd68",
+                "6be46a21.f93954",
+                "618c1697.3a70c8",
+                "37fafb63.109f84",
+                "f16c63dd.14548"
+            ]
+        ]
+    },
+    {
+        "id": "37fafb63.109f84",
+        "type": "Load Balance",
+        "z": "301b3265.8f9cee",
+        "defaultcapacity": "100",
+        "mps": "",
+        "name": "next below avg capacity",
+        "nocapacity": "admin",
+        "outputs": 4,
+        "routes": "3",
+        "selection": "nextsmoothed",
+        "x": 470,
+        "y": 280,
+        "wires": [
+            [
+                "e2843e9d.54aa2"
+            ],
+            [
+                "4625dae2.e9bc34"
+            ],
+            [
+                "54e8007a.13a2c"
+            ],
+            [
+                "9e0102e4.3139d"
+            ]
+        ]
+    },
+    {
+        "id": "b2161de7.bb0af",
+        "type": "inject",
+        "z": "301b3265.8f9cee",
+        "name": "",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 80,
+        "y": 260,
+        "wires": [
+            [
+                "37fafb63.109f84"
+            ]
+        ]
+    },
+    {
+        "id": "9b0ff398.b5cfb",
+        "type": "inject",
+        "z": "301b3265.8f9cee",
+        "name": "loadbalance.list",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "loadbalance.list",
+        "payload": "",
+        "payloadType": "date",
+        "x": 100,
+        "y": 60,
+        "wires": [
+            [
+                "618c1697.3a70c8"
+            ]
+        ]
+    },
+    {
+        "id": "6458dc41.6eb5f4",
+        "type": "inject",
+        "z": "301b3265.8f9cee",
+        "name": "loadbalance.debug",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "loadbalance.debug",
+        "payload": "",
+        "payloadType": "date",
+        "x": 110,
+        "y": 140,
+        "wires": [
+            [
+                "6be46a21.f93954"
+            ]
+        ]
+    },
+    {
+        "id": "19f5da5d.da0296",
+        "type": "inject",
+        "z": "301b3265.8f9cee",
+        "name": "loadbalance.list",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "loadbalance.list",
+        "payload": "",
+        "payloadType": "date",
+        "x": 100,
+        "y": 220,
+        "wires": [
+            [
+                "7029d6c7.f1dd68"
+            ]
+        ]
+    },
+    {
+        "id": "56c13557.679a7c",
+        "type": "inject",
+        "z": "301b3265.8f9cee",
+        "name": "loadbalance path all capacity 0",
+        "props": [
+            {
+                "p": "payload",
+                "v": "[{\"path\":0,\"capacity\":0},{\"path\":1,\"capacity\":0},{\"path\":2,\"capacity\":0}]",
+                "vt": "json"
+            },
+            {
+                "p": "topic",
+                "v": "loadbalance",
+                "vt": "string"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "loadbalance",
+        "payload": "[{\"path\":0,\"capacity\":0},{\"path\":1,\"capacity\":0},{\"path\":2,\"capacity\":0}]",
+        "payloadType": "json",
+        "x": 150,
+        "y": 520,
+        "wires": [
+            [
+                "37fafb63.109f84",
+                "7029d6c7.f1dd68",
+                "6be46a21.f93954",
+                "618c1697.3a70c8"
+            ]
+        ]
+    },
+    {
+        "id": "ffd4ef80.59639",
+        "type": "inject",
+        "z": "301b3265.8f9cee",
+        "name": "loadbalance path all capacity 100",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "loadbalance",
+        "payload": "[{\"path\":0,\"capacity\":100},{\"path\":1,\"capacity\":100},{\"path\":2,\"capacity\":100}]",
+        "payloadType": "json",
+        "x": 150,
+        "y": 560,
+        "wires": [
+            [
+                "37fafb63.109f84",
+                "7029d6c7.f1dd68",
+                "6be46a21.f93954",
+                "618c1697.3a70c8",
+                "f16c63dd.14548"
+            ]
+        ]
+    },
+    {
+        "id": "79ef4eb7.20595",
+        "type": "inject",
+        "z": "301b3265.8f9cee",
+        "name": "loadbalance path all status: 1",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "loadbalance",
+        "payload": "[{\"path\":0,\"status\":1},{\"path\":1,\"status\":1},{\"path\":2,\"status\":1}]",
+        "payloadType": "json",
+        "x": 140,
+        "y": 680,
+        "wires": [
+            [
+                "37fafb63.109f84",
+                "7029d6c7.f1dd68",
+                "6be46a21.f93954",
+                "618c1697.3a70c8",
+                "f16c63dd.14548"
+            ]
+        ]
+    },
+    {
+        "id": "e3fe5a10.988198",
+        "type": "inject",
+        "z": "301b3265.8f9cee",
+        "name": "loadbalance path all status: 0",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "loadbalance",
+        "payload": "[{\"path\":0,\"status\":0},{\"path\":1,\"status\":0},{\"path\":2,\"status\":0}]",
+        "payloadType": "json",
+        "x": 140,
+        "y": 640,
+        "wires": [
+            [
+                "37fafb63.109f84",
+                "7029d6c7.f1dd68",
+                "6be46a21.f93954",
+                "618c1697.3a70c8"
+            ]
+        ]
+    },
+    {
+        "id": "6ef383eb.0b3e4c",
+        "type": "inject",
+        "z": "301b3265.8f9cee",
+        "name": "loadbalance path 0 status: 0 (off)",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "loadbalance",
+        "payload": "{\"path\":0,\"status\":0}",
+        "payloadType": "json",
+        "x": 150,
+        "y": 600,
+        "wires": [
+            [
+                "37fafb63.109f84",
+                "7029d6c7.f1dd68",
+                "6be46a21.f93954",
+                "618c1697.3a70c8",
+                "f16c63dd.14548"
+            ]
+        ]
+    },
+    {
+        "id": "f16c63dd.14548",
+        "type": "Load Balance",
+        "z": "301b3265.8f9cee",
+        "defaultcapacity": "3",
+        "mps": true,
+        "name": "fold on capacity with mps + discard",
+        "nocapacity": "discard",
+        "outputs": 4,
+        "routes": "3",
+        "selection": "foldweighted",
+        "x": 500,
+        "y": 380,
+        "wires": [
+            [
+                "e2843e9d.54aa2"
+            ],
+            [
+                "4625dae2.e9bc34"
+            ],
+            [
+                "54e8007a.13a2c"
+            ],
+            [
+                "9e0102e4.3139d"
+            ]
+        ]
+    },
+    {
+        "id": "296f2734.4a3428",
+        "type": "inject",
+        "z": "301b3265.8f9cee",
+        "name": "loadbalance.list",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "loadbalance.list",
+        "payload": "",
+        "payloadType": "date",
+        "x": 100,
+        "y": 380,
+        "wires": [
+            [
+                "f16c63dd.14548"
+            ]
+        ]
+    },
+    {
+        "id": "3fd3724f.af0f3e",
+        "type": "inject",
+        "z": "301b3265.8f9cee",
+        "name": "",
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 90,
+        "y": 340,
+        "wires": [
+            [
+                "f16c63dd.14548"
+            ]
+        ]
+    },
+    {
+        "id": "1be350ed.ca44ef",
+        "type": "comment",
+        "z": "301b3265.8f9cee",
+        "name": "Load Injector requires nodered-contribut-prib-functions",
+        "info": "",
+        "x": 560,
+        "y": 600,
+        "wires": []
+    },
+    {
+        "id": "5c1c0279.61b74c",
+        "type": "Load Injector",
+        "z": "301b3265.8f9cee",
+        "name": "Fold Load Inject for 10 seconds",
+        "thinktimemin": "100",
+        "thinktimemax": "200",
+        "runtime": "10",
+        "payload": "",
+        "payloadType": "date",
+        "x": 510,
+        "y": 480,
+        "wires": [
+            [
+                "f16c63dd.14548"
+            ]
+        ]
+    },
+    {
+        "id": "8019fb36.fab0f8",
+        "type": "Load Balance",
+        "z": "ab3caaca.c63fa8",
+        "defaultcapacity": 100,
+        "mps": "",
+        "name": "load balance with sticky + round robin",
+        "nocapacity": "admin",
+        "outputs": 4,
+        "routes": "3",
+        "selection": "next",
+        "sourceProperty": "",
+        "sticky": true,
+        "x": 430,
+        "y": 200,
+        "wires": [
+            [],
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "9e0102e4.3139d",
+        "type": "Monitor Flow",
+        "z": "301b3265.8f9cee",
+        "name": "p3",
+        "x": 790,
+        "y": 280,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "54e8007a.13a2c",
+        "type": "Monitor Flow",
+        "z": "301b3265.8f9cee",
+        "name": "p2",
+        "x": 790,
+        "y": 200,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "4625dae2.e9bc34",
+        "type": "Monitor Flow",
+        "z": "301b3265.8f9cee",
+        "name": "p1",
+        "x": 790,
+        "y": 120,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "2ea207d9.66b078",
+        "type": "Load Injector",
+        "z": "301b3265.8f9cee",
+        "name": "round Load Inject for 10 seconds",
+        "thinktimemin": "100",
+        "thinktimemax": "200",
+        "runtime": "10",
+        "payload": "",
+        "payloadType": "date",
+        "x": 520,
+        "y": 540,
+        "wires": [
+            [
+                "618c1697.3a70c8"
+            ]
+        ]
+    },
+    {
+        "id": "c585e79.1700e18",
+        "type": "inject",
+        "z": "c450bf61.2740a",
+        "name": "loadbalance path 0 status: 0 (off)",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "loadbalance",
+        "payload": "{\"path\":0,\"status\":0}",
+        "payloadType": "json",
+        "x": 370,
+        "y": 160,
+        "wires": [
+            [
+                "d4abab41.2f6168"
+            ]
+        ]
+    },
+    {
+        "id": "cdecf7c6.ea45c8",
+        "type": "Monitor Flow",
+        "z": "8296331f.9cbd4",
+        "name": "",
+        "x": 630,
+        "y": 320,
+        "wires": [
+            [
+                "16f9a5ac.e38c5a"
+            ]
+        ]
+    },
+    {
+        "id": "238551db.3ed56e",
+        "type": "Monitor Flow",
+        "z": "8296331f.9cbd4",
+        "name": "",
+        "x": 630,
+        "y": 380,
+        "wires": [
+            [
+                "140331cb.09559e"
+            ]
+        ]
+    },
+    {
+        "id": "6a2b3067.0fe8d",
+        "type": "Monitor Flow",
+        "z": "8296331f.9cbd4",
+        "name": "",
+        "x": 630,
+        "y": 140,
+        "wires": [
+            [
+                "2e77459c.7620da"
+            ]
+        ]
+    },
+    {
+        "id": "18ba1b5.28eb3e5",
+        "type": "Monitor Flow",
+        "z": "8296331f.9cbd4",
+        "name": "",
+        "x": 590,
+        "y": 200,
+        "wires": [
+            [
+                "e69bbd65.3ecd3"
+            ]
+        ]
+    },
+    {
+        "id": "140331cb.09559e",
+        "type": "Logger",
+        "z": "8296331f.9cbd4",
+        "name": "",
+        "count": "10",
+        "sendOutputLog": true,
+        "sendConsoleLog": true,
+        "active": false,
+        "x": 630,
+        "y": 460,
+        "wires": [
+            [],
+            [
+                "32c9118a.74214e"
+            ]
+        ]
+    },
+    {
+        "id": "e69bbd65.3ecd3",
+        "type": "Logger",
+        "z": "8296331f.9cbd4",
+        "name": "",
+        "count": "10",
+        "sendOutputLog": false,
+        "sendConsoleLog": true,
+        "active": false,
+        "x": 630,
+        "y": 260,
+        "wires": [
+            [
+                "a55428c3.96a308"
+            ],
+            []
+        ]
+    }
+]
