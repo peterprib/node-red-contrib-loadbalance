@@ -8,6 +8,7 @@ Basically spreads input messages to flows based on:
 * Random - randomly across out paths
 * Fold on capacity - place load on first node in order with capacity.  Good for improving cache hit ratios. At full capacity random selection.
 * Next smoothing to average capacity - next that is >= average capacity to get smoothing of load. At full capacity random selection.
+* Persist path states and capacity on recycle in context storage - need to defined content persistence in nodered settings, see https://nodered.org/docs/user-guide/context 
 
 This allows incoming messages to be passed to servers that may be other node red instances.
 
@@ -57,15 +58,24 @@ Basically a remote node could be constructed to send a message to update
 
 Will send metadata about queues to admin output port.
 
-## msg.topic loanbalance.debug
+## msg.topic loadbalance.debug
 
 Will send metadata about queues to error log so visible in debug console.
 
-## msg.topic loanbalance.route
+## msg.topic loadbalance.route
 
 If paths set to 1 and template selected enables dynamic routing.
 Current only "http request" template allowed.  
 Form of payload {url:"/a/url/path"}
+
+## msg.topic loadbalance.save
+
+Persists path metrics and states
+
+## msg.topic loadbalance.saveDetails
+
+Content of save metrics
+
 
 ------------------------------------------------------------
 
@@ -76,17 +86,16 @@ Either FNV or Pearson hashing technique can be used.
 If Pearson at most 256 routes are possible as this is the lookup size used.
 The if an odd number of routes, 1 route will receive proportional less activity based number of routes. 
 
-![Hash Route Node](documentation/hashRouteNode.JPG "Hash Route")
+![Hash Route Node](documentation/hashRouteNode.jpg "Hash Route")
 
 Example flow included in test folder.
 
-![Hash Route Test Flow](documentation/hashRoute.JPG "Hash Route Test Flow")
+![Hash Route Test Flow](documentation/hashRoute.jpg "Hash Route Test Flow")
 
 ------------------------------------------------------------
 
 # Wish List
 
-1. Persist path states and capacity on recycle 
 * Alive polling, keep alive can be used to trigger remote to send capacity metrics (note, this could be done by flow)
 * Other dynamic template node types e.g. mq, http out etc.
 * Dynamic addition of paths by discovery (note, this could be done by flow)
@@ -118,6 +127,8 @@ Test flow for sticky feature in test/testDynamic.json
 ------------------------------------------------------------
 
 # Version
+
+0.6.0 Persist metrics and paths
 
 0.5.0 Add hash on part of msg to determine path, improve dynamic and fix bug when duplicate path 
 

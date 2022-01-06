@@ -1,7 +1,55 @@
-const logger = new (require("node-red-contrib-logger"))("loadbalance");
+const logger = new (require("node-red-contrib-logger"))("Load Balance");
 logger.sendInfo("Copyright 2021 Jaroslav Peter Prib");
 
 const dynamicNodes=[];
+const nodes=[];
+let checkLoopObject;
+const stateProperties={status:1,capacity:this.defaultcapacity,baseCapacity:this.defaultcapacity,count:0,history:Array(3).fill({count:0,capacity:this.defaultcapacity,status:1})};
+//const statePropertiesKeys=Object.getOwnPropertyNames(stateProperties);
+const statePropertiesKeys=["path","paths"];
+if(Object.prototype.defineFunction)
+	console.warn("Object.prototype.defineFunction already defined");
+else 
+	Object.defineProperty(Object.prototype, "defineFunction", {
+			enumerable: false
+			,value: function(o,p,f) {
+					if(o.hasOwnProperty(p))
+						console.warn("Object.prototype."+p+" already defined for "+o.name);
+					else
+						Object.defineProperty(o.prototype, p, {
+								enumerable: false
+								,value: f
+							});
+				}
+		});
+function deepCopyObject(o) {
+	if(o == null || typeof o !== "object") return o;
+    if(o.constructor == Date 
+	|| o.constructor == RegExp 
+	|| o.constructor == Function
+	|| o.constructor == String
+	|| o.constructor == Number
+	|| o.constructor == Boolean) {
+		return new o.constructor(from);
+	} else if(o instanceof Array) {
+		const r=[],l=o.length;
+		for (let i = 0; i < l; i++)	r[i] = deepCopyObject(o[i]);
+		return r;
+	} else {
+		const r={};
+		Object.getOwnPropertyNames(o).forEach((p)=>r[p]=deepCopyObject(o[p]));
+		return r;
+	}
+	throw new Error("unknown type");
+}
+
+Object.defineFunction(Object ,"cloneProperties", function(...properties) {
+	const v=this;
+	return [].concat(...properties).reduce((a,p)=>{
+			a[p]=deepCopyObject(v[p]);
+			return a;
+		},{});
+	});
 
 function routeAdmin(msg) {
 	logger.info({label:"routeAdmin",msg:msg})
@@ -13,6 +61,7 @@ function routeAdmin(msg) {
 		default:
 			this.error("unknown action "+JSON.stringify(msg.payload));
 	}
+	setAvailable.apply(node);
 }
 function simpleEqual(a,b) {
 	for(const p in a) {
@@ -81,7 +130,7 @@ function updatePath(data) {
 	} catch(ex) {
 		if(logger.active) logger.error({label:"updatePath",error:ex.message})
 		this.error("loadbalance update failed: "+ex +" data: "+JSON.stringify(data));
-	}	
+	}
 }
 function setAvailable() {
 	let available=[];
@@ -94,6 +143,7 @@ function setAvailable() {
 	this.available=available;
 	const routes=this.dynamicRouting?this.dynamicPaths.length:this.routes;
 	this.status({ fill: (this.available.length?(this.available.length==routes?'green':'yellow'):'red'), shape: 'dot', text: "Routes: "+routes + " Available: "+this.available.length});
+	save(this);
 }
 
 const setPaths={
@@ -167,7 +217,7 @@ function mpsCheckLoop(node) {
 	}
 }
 
-function checkLoop(node) { 
+function updateHistory(node) { 
 	try{
 		for(let i=0;i<node.routes;i++) {
 			const n=node.paths[i];
@@ -176,8 +226,8 @@ function checkLoop(node) {
 			n.count=0;
 		}
 	} catch(ex) {
-		if(logger.active) logger.error({label:"checkLoop",error:ex.message})
-		node.error("checkloop error: "+ex.message+" node: "+JSON.stringify(n));
+		if(logger.active) logger.error({label:"undateHistory",error:ex.message})
+		node.error("updateHistory error: "+ex.message+" node: "+JSON.stringify(n));
 	}
 }
 function pearsonHash(routes){
@@ -209,127 +259,170 @@ function setHash(node){
 		throw Error("unknown hash type "+node.hashType);
 	}
 }
+const saveSetNode=node=> {
+	const settings=getSavedDetails(node);
+	if(logger.active) logger.send({label:"saveSetNode",id:node.id,name:node.name,settings:settings})
+	if(settings) {
+		node.warn("restoring last state")
+		Object.assign(node,settings);
+//		setAvailable.apply(node);
+		logger.send({label:"restored settings",id:node.id,name:node.name})
+//		for(const p in settings) {
+//			if(settings[p]==node[p]) continue;
+//			logger.send({label:"restored settings diff",property:p,settings:settings[p],node:node[p]})
+//		}
+	}
+}
+const save=node=>{
+	const details=getDetails(node);
+	if(logger.active) logger.send({label:"save",id:node.id,name:node.name,values:details})
+	const nodeContext = node.context();
+	nodeContext.set("saved",details);
+};
+const getSavedDetails=node=>node.context().get("saved");
+const getDetails=node=>node.cloneProperties(statePropertiesKeys);
+function checkLoop(){
+	if(logger.active) logger.send({label:"checkLoop"})
+	nodes.forEach(node=>{
+		updateHistory(node);
+		save(node);
+	});
+}
 module.exports = function(RED) {
 	 function loadBalanceNode(n) {
-		RED.nodes.createNode(this,n);
-		const node=Object.assign(this,{path:0,paths:[],available:[],pathCapacityAvg:100,discards:0,dynamicPaths:[]},n);
-		node.defaultcapacity=node.defaultcapacity||100;
-		node.logicalPorts=node.outputs;
-		if(typeof node.routes == "string")
-			node.routes=parseInt(node.routes); 
-		node.dynamicRouting=(node.routes==1 && this.dynamic!=="")
-		for(let i=0;i<node.routes;i++)
-			addPath.apply(this);
-		const orginalSend=node.send;
-		node.orginalSend=orginalSend;
-		if(node.dynamicRouting) {
-			dynamicNodes.push(this);
-			updatePath.apply(node,[{path:0,status:0}]);
-			node.send=function(msg=[]) {
-				let i=msg.findIndex(v => v||false);
-				if(logger.active) logger.send({label:"dynamic send",msg:msg})
-				if(node.lastMsgId && msg._msgid==node.lastMsgId) throw Error("Loop");
-				node.lastMsgId=msg._msgid;
-				if(i==-1) {
-					if(logger.active) logger.send({label:"dynamic send discard"})
-					node.orginalSend.apply(node,[]);
-					return;
+		try{
+			RED.nodes.createNode(this,n);
+			if(logger.active) logger.sendDebug({label:"create node",node:n})
+			const node=Object.assign(this,{path:0,paths:[],available:[],pathCapacityAvg:100,discards:0,dynamicPaths:[]},n);
+			nodes.push(this);
+			node.defaultcapacity=node.defaultcapacity||100;
+			node.logicalPorts=node.outputs;
+			if(typeof node.routes == "string")
+				node.routes=parseInt(node.routes); 
+			node.dynamicRouting=(node.routes==1 && this.dynamic!=="")
+			for(let i=0;i<node.routes;i++)
+				addPath.apply(this);
+			const orginalSend=node.send;
+			node.orginalSend=orginalSend;
+			if(node.dynamicRouting) {
+				dynamicNodes.push(this);
+				updatePath.apply(node,[{path:0,status:0}]);
+				node.send=function(msg=[]) {
+					let i=msg.findIndex(v => v||false);
+					if(logger.active) logger.send({label:"dynamic send",msg:msg})
+					if(node.lastMsgId && msg._msgid==node.lastMsgId) throw Error("Loop");
+					node.lastMsgId=msg._msgid;
+					if(i==-1) {
+						if(logger.active) logger.send({label:"dynamic send discard"})
+						node.orginalSend.apply(node,[]);
+						return;
+					}
+					if(i==0) {
+						if(logger.active) logger.send({label:"dynamic send admin"})
+						node.orginalSend.apply(node,[msg]);
+						return;
+					}
+					try{
+						if(logger.active) logger.send({label:"dynamic send",path:i,paths:node.paths,dynamicPaths:node.dynamicPaths.length})
+						const m=msg[i];
+						const routeOffset=i-2;
+						Object.assign(m,{loadbalance:routeOffset},node.dynamicPaths[routeOffset].override);
+						this.paths[m.loadbalance].capacity--;
+						node.dynamicTemplate.emit('input',m);
+					} catch(ex) {
+						if(logger.active) logger.error({label:"dynamic send error",error:ex.message,routes:node.dynamicPaths.length,stack:ex.stack})
+						node.paths[routeOffset+1].status=0;
+						node.error("dynamic path made unavalable due to error "+ex.message);
+						node.pathNoAvailability(node,msg)
+					}
 				}
-				if(i==0) {
-					if(logger.active) logger.send({label:"dynamic send admin"})
-					node.orginalSend.apply(node,[msg]);
-					return;
-				}
-				try{
-					if(logger.active) logger.send({label:"dynamic send",path:i,paths:node.paths,dynamicPaths:node.dynamicPaths.length})
-					const m=msg[i];
-					const routeOffset=i-2;
-					Object.assign(m,{loadbalance:routeOffset},node.dynamicPaths[routeOffset].override);
-					this.paths[m.loadbalance].capacity--;
-					node.dynamicTemplate.emit('input',m);
-				} catch(ex) {
-					if(logger.active) logger.error({label:"dynamic send error",error:ex.message,routes:node.dynamicPaths.length,stack:ex.stack})
-					node.paths[routeOffset+1].status=0;
-					setAvailable.apply(node);
-					node.error("dynamic path made unavalable due to error "+ex.message);
-					node.pathNoAvailability(node,msg)
-				}
+				setHash(node);
 			}
-			setHash(node);
-		}
-		setAvailable.apply(node);
-		let setPath;
-		try{
-			setPath=setPaths[node.selection];
-		} catch(ex) {
-			if(logger.active) logger.error({label:"setPath default to random",error:ex.message})
-			node.error("Selection mode not found: "+node.selection);
-			setPath=setPaths.random;
-		}
-		try{
-			if(node.selection=="hash") {
-				if(logger.active) logger.send({label:"set up hash function",hashType:node.hashType,sourceProperty:node.sourceProperty})
-				node.sourceMap=eval("(RED,node,msg)=>"+(node.sourceProperty||"msg.topic"));
-				setHash(node)
-//				node.hash="(RED,node,msg)=>"+(node.sourceProperty||"msg.topic");
-			}
-		} catch(ex) {
-			if(logger.active) logger.error({label:"set up hash function",hashType:node.hashType,sourceProperty:node.sourceProperty})
-			node.error("hash source mapping,  "+ex.message);
-		}
-		try{
-			node.pathNoCapacity=setPaths[node.nocapacity];
-		} catch(ex) {
-			if(logger.active) logger.error({label:"set pathNoCapacity",error:ex.message})
-			node.error("No capacity selection mode not found, value: "+node.nocapacity);
-			this.pathNoCapacity=setPaths.random;
-		}
-		try{
-			node.pathNoAvailability=noAvailablityAction[node.noavailability];
-		} catch(ex) {
-			if(logger.active) logger.error({label:"set pathNoAvailability",error:ex.message})
-			node.error("No Availability selection mode not found, value: "+node.noavailability);
-			node.pathNoAvailability=noAvailablityAction.admin;
-		}
-		 node.on('input', function (msg) {
-			switch (msg.topic) {
-			case 'loadbalance':
-				updatePath.apply(node,[msg.payload]);
-				let t=0;
-				for(const r in node.routes)
-					if(r.status) 
-						t+=r.capacity;
-				setAvailable.apply(node);
-				node.pathCapacityAvg=node.available.length?t/node.available.length:0;
-				node.orginalSend();
-				return;
-			case 'loadbalance.list':
-				msg.payload={discards:node.discards,capacityAverage:node.pathCapacityAvg,available:node.available,paths:node.paths};
-				node.orginalSend(msg);
-				return;
-			case 'loadbalance.debug':
-				node.error("selection mode: "+node.selection+" path pointer: "+node.path+" average capacity: "+node.pathCapacityAvg +" available: "+JSON.stringify(node.available) +" paths: "+JSON.stringify(node.paths));
-				node.orginalSend();
-				return;
-			case 'loadbalance.route':
-				routeAdmin.apply(node,[msg]);
-				node.orginalSend();
-				return;
-			case 'debug.on':
-				logger.setOn()
-				return;
-			case 'debug.off':
-				logger.setOff()
-				return;
-			}
-			if(node.available.length<1) { // then no Availability 
-				node.pathNoAvailability(node,msg);
-				return;
-			}
-			let route,routeNumber;
+			saveSetNode(node);
+			setAvailable.apply(node);
+			let setPath;
 			try{
-				if(msg.loadbalance) throw Error("potential loop")
-				if(node.sticky && msg.req && msg.req.cookies && msg.req.cookies[node.id]) {
+				setPath=setPaths[node.selection];
+			} catch(ex) {
+				if(logger.active) logger.error({label:"setPath default to random",error:ex.message})
+				node.error("Selection mode not found: "+node.selection);
+				setPath=setPaths.random;
+			}
+			try{
+				if(node.selection=="hash") {
+					if(logger.active) logger.send({label:"set up hash function",hashType:node.hashType,sourceProperty:node.sourceProperty})
+					node.sourceMap=eval("(RED,node,msg)=>"+(node.sourceProperty||"msg.topic"));
+					setHash(node)
+	//				node.hash="(RED,node,msg)=>"+(node.sourceProperty||"msg.topic");
+				}
+			} catch(ex) {
+				if(logger.active) logger.error({label:"set up hash function",hashType:node.hashType,sourceProperty:node.sourceProperty})
+				node.error("hash source mapping,  "+ex.message);
+			}
+			try{
+				node.pathNoCapacity=setPaths[node.nocapacity];
+			} catch(ex) {
+				if(logger.active) logger.error({label:"set pathNoCapacity",error:ex.message})
+				node.error("No capacity selection mode not found, value: "+node.nocapacity);
+				this.pathNoCapacity=setPaths.random;
+			}
+			try{
+				node.pathNoAvailability=noAvailablityAction[node.noavailability];
+			} catch(ex) {
+				if(logger.active) logger.error({label:"set pathNoAvailability",error:ex.message})
+				node.error("No Availability selection mode not found, value: "+node.noavailability);
+				node.pathNoAvailability=noAvailablityAction.admin;
+			}
+			node.on('input', function (msg) {
+				if(logger.active) logger.error({label:"input received message"})
+				switch (msg.topic) {
+				case 'loadbalance':
+					updatePath.apply(node,[msg.payload]);
+					let t=0;
+					for(const r in node.routes)
+						if(r.status) 
+							t+=r.capacity;
+					setAvailable.apply(node);
+					node.pathCapacityAvg=node.available.length?t/node.available.length:0;
+					node.orginalSend();
+					return;
+				case 'loadbalance.getDetails':
+				case 'loadbalance.list':
+					msg.payload=getDetails(node);
+					node.orginalSend(msg);
+					return;
+				case 'loadbalance.debug':
+					node.error("selection mode: "+node.selection+" path pointer: "+node.path+" average capacity: "+node.pathCapacityAvg +" available: "+JSON.stringify(node.available) +" paths: "+JSON.stringify(node.paths));
+					node.orginalSend();
+					return;
+				case 'loadbalance.route':
+					routeAdmin.apply(node,[msg]);
+					setAvailable.apply(node);
+
+					node.orginalSend();
+					return;
+				case 'loadbalance.save':
+					save(node);
+					return;
+				case 'loadbalance.saveDetails':
+					msg.payload=getSavedDetails(node);
+					node.orginalSend(msg);
+					return;
+				case 'debug.on':
+					logger.setOn()
+					return;
+				case 'debug.off':
+					logger.setOff()
+					return;
+				}
+				if(node.available.length<1) { // then no Availability 
+					node.pathNoAvailability(node,msg);
+					return;
+				}
+				let route,routeNumber;
+				try{
+					if(msg.loadbalance) throw Error("potential loop")
+					if(node.sticky && msg.req && msg.req.cookies && msg.req.cookies[node.id]) {
 						const pathLastTime = Number(msg.req.cookies[node.id]);
 						if(node.paths[pathLastTime].status) {
 							const o=Array(node.outputs).fill(null).fill(msg,pathLastTime+1,pathLastTime+2);
@@ -338,55 +431,59 @@ module.exports = function(RED) {
 								node.paths[pathLastTime].capacity--;
 							return;
 						}
-				}
-				routeNumber=setPath.apply(node,[RED,node,msg]);
-				if(routeNumber<0) throw Error("")
-						route=node.paths[routeNumber];
+					}
+					routeNumber=setPath.apply(node,[RED,node,msg]);
+					if(routeNumber<0) throw Error("")
+					route=node.paths[routeNumber];
 					if(logger.active) logger.send({label:"input process",routeNumber:routeNumber,route:route})
 					route.count++; 
-			} catch(ex) {
-				node.discards++;
-				if(logger.active) logger.send({label:"input process error",error:ex.message,routeNumber:routeNumber,discards:node.discards,available:node.available.length,stack:ex.stack})
-				if(routeNumber==-2) // no capacity issue
-					noAvailablityAction.discard(node,msg)
-				else
-					noAvailablityAction.admin(node,msg)
-				return;
+				} catch(ex) {
+					node.discards++;
+					if(logger.active) logger.send({label:"input process error",error:ex.message,routeNumber:routeNumber,discards:node.discards,available:node.available.length,stack:ex.stack})
+					if(routeNumber==-2) // no capacity issue
+						noAvailablityAction.discard(node,msg)
+					else
+						noAvailablityAction.admin(node,msg)
+					return;
+				}
+				if(node.sticky) {
+					if(logger.active) logger.send({label:"input process sticky"})
+					if(!msg.cookies) msg.cookies = {};
+					msg.cookies[node.id]={ 
+						value: routeNumber,
+						maxAge:360000	 // 1 hour
+					};
+					/*
+					 domain - (String) domain name for the cookie
+					 expires - (Date) expiry date in GMT. If not specified or set to 0, creates a session cookie
+					 maxAge - (String) expiry date as relative to the current time in milliseconds
+					 path - (String) path for the cookie. Defaults to /
+					 value - (String) the value to use for the cookie
+					*/
+				}
+				const o=Array(routeNumber+2).fill(null,routeNumber).fill(msg,routeNumber+1,routeNumber+2);
+				node.send(o);
+				if(node.mpsCheck) route.capacity--;
+			});
+	
+			if(node.mps && ['foldweighted','nextsmoothed'].includes(node.selection) ) {
+				node.mpsCheck = setInterval(mpsCheckLoop, 1000, node); // check every second
+				node.log("Established mps capacity");
 			}
-			if(node.sticky) {
-				if(logger.active) logger.send({label:"input process sticky"})
-				if(!msg.cookies) msg.cookies = {};
-				msg.cookies[node.id]={ 
-					 value: routeNumber,
-					maxAge:360000	 // 1 hour
-				};
-				/*
-				 domain - (String) domain name for the cookie
-				 expires - (Date) expiry date in GMT. If not specified or set to 0, creates a session cookie
-				 maxAge - (String) expiry date as relative to the current time in milliseconds
-				 path - (String) path for the cookie. Defaults to /
-				 value - (String) the value to use for the cookie
-				*/
-			}
-			const o=Array(routeNumber+2).fill(null,routeNumber).fill(msg,routeNumber+1,routeNumber+2);
-			node.send(o);
-			if(node.mpsCheck)
-				route.capacity--;
-		});
-		node.check = setInterval(checkLoop, 60000 ,node); // check every minute
-
-		if(node.mps && ['foldweighted','nextsmoothed'].includes(node.selection) ) {
-			node.mpsCheck = setInterval(mpsCheckLoop, 1000, node); // check every second
-			node.log("Established mps capacity");
+			node.on("close", function(removed,done) {
+				if(node.mpsCheck) clearInterval(node.mpsCheck)
+				if(checkLoopObject) clearInterval(checkLoopObject);
+				done();
+			});
+		} catch(ex) {
+			logger.sendErrorAndStackDump("failure on load",ex);
 		}
-		node.on("close", function(removed,done) {
-			if(node.mpsCheck)
-				clearInterval(node.mpsCheck)
-			clearInterval(node.check);
-			done();
-		});
 	 }
 	RED.events.on("flows:started",function() {
+		if(checkLoopObject==null){
+			if(logger.active) logger.send({label:"set checkLoop"})
+			checkLoopObject = setInterval(checkLoop, 60000); // check every minute
+		}
 		dynamicNodes.forEach((node)=>{
 			try{
 				if(node.dynamicRouting) {
@@ -432,5 +529,5 @@ module.exports = function(RED) {
 			}
 		});
 	});
-	 RED.nodes.registerType("Load Balance",loadBalanceNode);
+	RED.nodes.registerType(logger.label,loadBalanceNode);
 };
