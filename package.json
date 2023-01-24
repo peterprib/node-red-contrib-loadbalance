@@ -9,7 +9,7 @@
     "axios": ">=0.21.2",
     "bcrypt": ">=5.0.0",
     "mocha": ">=9.1.3",
-    "node-red": "^2.1.4",
+    "node-red": "^3.0.2",
     "node-red-node-test-helper": "*",
     "nth-check": ">=2.0.1",
     "ws": ">=6.2.2"
