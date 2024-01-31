@@ -119,9 +119,9 @@ function updatePath(data) {
 				updatePath.apply(this,[a]);
 			}
 		} else {
-			if(data.hasOwnProperty('status') && data.status!=this.paths[data.path].status) {
+			if(this.showWarnings && data.hasOwnProperty('status') && data.status!=this.paths[data.path].status) {
 				this.warn((data.status?"A" : "Una")+"vailable path "+data.path);
-			}
+			}			
 			Object.assign(this.paths[data.path],data);
 			if(data.capacity) {
 				this.paths[data.path].baseCapacity=data.capacity;
@@ -292,6 +292,7 @@ module.exports = function(RED) {
 	 function loadBalanceNode(n) {
 		try{
 			RED.nodes.createNode(this,n);
+			this.showWarnings = n.showWarnings || false;
 			if(logger.active) logger.sendDebug({label:"create node",node:n})
 			const node=Object.assign(this,{path:0,paths:[],available:[],pathCapacityAvg:100,discards:0,dynamicPaths:[]},n);
 			nodes.push(this);

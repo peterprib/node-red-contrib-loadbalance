@@ -138,7 +138,11 @@
 		<label for="node-input-dynamic"><i class="fa fa-list-ul"></i> Dynamic template from workflow</label>
 		<select id="node-input-dynamic" placeholder="dynamic"></select>
 	</div>
-
+	<div class="form-row">
+		<label for="node-input-showWarnings"><i class="fa fa-warning"></i> Show warning messages</label>
+		<input type="checkbox" id="node-input-showWarnings" style="display: inline-block; width: auto;">
+	</div>
+	
 </script>
 
 <script type="text/javascript">
@@ -157,6 +161,7 @@
 			selection: {value:"next",required:true},
 			sourceProperty:{value:"msg.topic"},
 			sticky: {value:"",required:false},
+			showWarnings: { value: true },
 		},
 		inputs:1,
 		inputLabels: "",
@@ -214,9 +219,11 @@
 					$(".form-row-http-in-sticky").show();
 				}
 			}).change();
+			$('#node-input-showWarnings').prop('checked', this.showWarnings);
 			
 		},
 		oneditsave: function() {
+			this.showWarnings = $('#node-input-showWarnings').is(':checked');
 		},
 		oneditresize: function(size) {
 		}
